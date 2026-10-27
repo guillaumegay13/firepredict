@@ -1,0 +1,21 @@
+src/firepredict/targets.py
+  s_7d92950cd45a5d::t_b00fc93a8dcf75 1-56
+tests/test_targets.py
+  s_7d92950cd45a5d::t_919bc47adf5db5 1-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bf3f1168b51331fb900eaa3195c12e2e72ba257a",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

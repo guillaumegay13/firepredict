@@ -1,0 +1,32 @@
+pyproject.toml
+  s_7d92950cd45a5d::t_74585091bf7c0a 21,33-35
+src/firepredict/model_catboost.py
+  s_7d92950cd45a5d::t_cb8780df5043fe 67-69
+  s_7d92950cd45a5d::t_66b375ad465c99 88-89,91-92,94
+  s_7d92950cd45a5d::t_7d592407d7f97e 13-14
+src/firepredict/model_timestral.py
+  s_7d92950cd45a5d::t_582aad256af4a5 64-66
+  s_7d92950cd45a5d::t_09489eed992af5 1-30,34-63,67-86,88-93,95-130,133,138-139
+  s_7d92950cd45a5d::t_5a1ed22663a9f7 31-33
+  s_7d92950cd45a5d::t_b67fba262f7849 87,94
+  s_7d92950cd45a5d::t_01d1cb655bffe6 131-132,134-137
+  s_7d92950cd45a5d::t_b4b90d70467a36 140
+uv.lock
+  s_7d92950cd45a5d::t_f89dd0f882fd7e 13-25,398-476,534,556,679-711,724-782,801-812,979-1091,1153-1161,1171-1179,1288-1439,1893-1916,2039-2047,2122-2133,2152-2162,2172-2246
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2e2eb47a57661302b9f9fa67180d886a3d4c37c3",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

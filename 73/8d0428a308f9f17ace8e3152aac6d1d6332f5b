@@ -1,0 +1,27 @@
+src/firepredict/risk_map_template.html
+  s_7d92950cd45a5d::t_fe5c2be0c33ca2 194
+  s_7d92950cd45a5d::t_99804fe31dac50 1-140,142-193,195-255
+  s_7d92950cd45a5d::t_dd089a0de22137 141
+.gitignore
+  s_7d92950cd45a5d::t_d1106908b2ae2b 16-18
+src/firepredict/risk_map.py
+  s_7d92950cd45a5d::t_a6fa2180291b52 1-85
+src/firepredict/model_communes.py
+  s_7d92950cd45a5d::t_299e01ceaebeca 131-148,158
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "738d0428a308f9f17ace8e3152aac6d1d6332f5b",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

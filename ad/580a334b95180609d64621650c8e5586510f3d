@@ -1,0 +1,24 @@
+reports/phase1_results.md
+  s_7d92950cd45a5d::t_ea4d8730811091 142,144
+  s_7d92950cd45a5d::t_9b00c945898d22 163-167
+  s_7d92950cd45a5d::t_cc9818a5323193 137
+  s_7d92950cd45a5d::t_a066e4320f749e 28-29
+  s_7d92950cd45a5d::t_99d0a8e1d5fe78 89,91-133
+  s_7d92950cd45a5d::t_88e333083d41f7 12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ad580a334b95180609d64621650c8e5586510f3d",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

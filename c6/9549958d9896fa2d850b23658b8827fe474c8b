@@ -1,0 +1,40 @@
+src/firepredict/risk_map.py
+  s_7d92950cd45a5d::t_b3b4fb86c074ec 6,8
+  s_7d92950cd45a5d::t_79a80d77ce585e 7
+  s_7d92950cd45a5d::t_03945e96f854af 53,55
+  s_7d92950cd45a5d::t_142bb94d10301c 70-71
+src/firepredict/model_communes.py
+  s_7d92950cd45a5d::t_d47f90f48270f6 111-114,116-117
+  s_7d92950cd45a5d::t_70988e1cfc5c04 115
+  s_7d92950cd45a5d::t_27de33c073f97e 105
+  s_7d92950cd45a5d::t_21d13f5df79cf4 29
+  s_7d92950cd45a5d::t_1b0b9caa201b43 86-89,92
+src/firepredict/risk_map_template.html
+  s_7d92950cd45a5d::t_9236ee3aed1db2 102,104
+  s_7d92950cd45a5d::t_8d7891cc96e038 193
+  s_7d92950cd45a5d::t_dbddc2f8a7155d 229-230
+  s_7d92950cd45a5d::t_76d079b8e5f78e 81-83
+  s_7d92950cd45a5d::t_9600757a29d48d 254
+  s_7d92950cd45a5d::t_89a3588417b2b8 90
+  s_7d92950cd45a5d::t_20a17ef0bdd3fc 217
+  s_7d92950cd45a5d::t_bd0a69c4ed167f 210,213
+  s_7d92950cd45a5d::t_98811ceea93420 265-267
+  s_7d92950cd45a5d::t_5d5d544ffb71e3 182-188
+  s_7d92950cd45a5d::t_97fe3a24c9f8a8 248
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c69549958d9896fa2d850b23658b8827fe474c8b",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

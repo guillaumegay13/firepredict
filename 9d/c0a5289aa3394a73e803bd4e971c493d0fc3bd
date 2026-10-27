@@ -1,0 +1,20 @@
+src/firepredict/compare_years.py
+  s_7d92950cd45a5d::t_28d4981c97cbc8 1-29,31-49,51-108
+  s_7d92950cd45a5d::t_fa6555b869a4fd 30,50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9dc0a5289aa3394a73e803bd4e971c493d0fc3bd",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

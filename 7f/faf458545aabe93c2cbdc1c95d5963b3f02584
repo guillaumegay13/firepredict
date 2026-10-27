@@ -1,0 +1,45 @@
+src/firepredict/download.py
+  s_7d92950cd45a5d::t_7c1c7fb59d2f6f 1-170,172-180
+  s_7d92950cd45a5d::t_1da70f79d8fc9b 171
+.gitignore
+  s_7d92950cd45a5d::t_1da70f79d8fc9b 1-12
+  s_7d92950cd45a5d::t_da4467fd183082 13-15
+src/firepredict/certs/harica-geant-tls-r1.pem
+  s_7d92950cd45a5d::t_6aa569fef53347 1-35
+pyproject.toml
+  s_7d92950cd45a5d::t_dd8d6230dddd7a 1-9,16,20-24
+  s_7d92950cd45a5d::t_2918a39f14bbee 18-19
+  s_7d92950cd45a5d::t_361d264a333f63 17
+  s_7d92950cd45a5d::t_1da70f79d8fc9b 10
+  s_7d92950cd45a5d::t_22f4028aa93f9c 11-15
+src/firepredict/__init__.py
+  s_7d92950cd45a5d::t_dd8d6230dddd7a 1-2
+.python-version
+  s_7d92950cd45a5d::t_dd8d6230dddd7a 1
+src/firepredict/audit.py
+  s_7d92950cd45a5d::t_8ba369f2fcd370 27,40,76-77,129
+  s_7d92950cd45a5d::t_870e090de2f7a9 1-26,28-39,41-75,78-128,130-138
+src/firepredict/dataset.py
+  s_7d92950cd45a5d::t_aace7f6994aa28 1-155,160-170,174-186
+  s_7d92950cd45a5d::t_d2d5a67df80e07 156-159,171-173
+src/firepredict/features.py
+  s_7d92950cd45a5d::t_854da822f6c84a 1-80
+uv.lock
+  s_7d92950cd45a5d::t_7eae1e1f1fc788 1-1589
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7ffaf458545aabe93c2cbdc1c95d5963b3f02584",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

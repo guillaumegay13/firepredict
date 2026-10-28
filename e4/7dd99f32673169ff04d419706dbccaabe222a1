@@ -1,0 +1,26 @@
+src/firepredict/model_spatial.py
+  s_7d92950cd45a5d::t_7295a276347b90 29,86-89
+  s_7d92950cd45a5d::t_f1c128f3d09491 1-28,30-85,90-113
+src/firepredict/compare_communes.py
+  s_7d92950cd45a5d::t_f390110f3c337b 18-20,34,38,60,64-65,77-81,121-126
+pyproject.toml
+  s_7d92950cd45a5d::t_175ae07a0e9fda 17
+uv.lock
+  s_7d92950cd45a5d::t_df1947a277d14d 26-87,143-151,601,624,1008-1019,1064-1075,1250-1258,1811-1831,1931-1962,2052-2064,2460-2473
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e47dd99f32673169ff04d419706dbccaabe222a1",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

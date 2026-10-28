@@ -1,0 +1,26 @@
+src/firepredict/download.py
+  s_7d92950cd45a5d::t_1b0aaa072278e8 16,239
+  s_7d92950cd45a5d::t_3f222d2e0d4285 210-232
+src/firepredict/model_communes.py
+  s_7d92950cd45a5d::t_fd2dd196de1d6e 30,36,40,86,90-108,239
+  s_7d92950cd45a5d::t_7ec9cba76d9ee1 52-55,57-58,146-147,211,215-216,229-233,240-241
+src/firepredict/landscape.py
+  s_7d92950cd45a5d::t_2434f47350886e 1-49,52-99
+  s_7d92950cd45a5d::t_2096022e41ec6e 50-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f16f408c0d91b12b897931e8799ed3d42b0b5032",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

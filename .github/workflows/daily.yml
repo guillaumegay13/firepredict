@@ -40,8 +40,10 @@ jobs:
           done
       - name: Var forecast, model v2 (the original live test)
         run: uv run python -m firepredict.forecast
-      - name: Forecasts for every department, model v3
-        run: uv run python -m firepredict.model_v3 forecast
+      - name: Forecasts for every department, models v3 and v4
+        run: |
+          uv run python -m firepredict.model_v3 forecast
+          uv run python -m firepredict.model_v4 forecast
       - name: Maps
         run: |
           for code in 83 13; do FIREPREDICT_DEPARTMENT=$code uv run python -m firepredict.risk_map; done

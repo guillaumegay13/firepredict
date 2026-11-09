@@ -28,7 +28,7 @@ import shapely
 from firepredict.communes import load_communes
 from firepredict.dataset import PROCESSED_DIR, RESULTS_DIR, ROOT, load_meteo
 from firepredict.compare_communes import leave_one_year_out, small
-from firepredict import model_v3
+from firepredict import model_v3, model_v4
 from firepredict.department import CODE, DEPARTMENTS
 from firepredict.freeze import FROZEN_DEPARTMENT, VERSION, predict
 from firepredict.model_communes import HORIZON, build_panel
@@ -86,8 +86,10 @@ def weather(dates: pd.DatetimeIndex, communes: pd.DataFrame) -> dict:
 
 
 def model_for_map() -> str | None:
-    """The frozen model whose forecasts the map shows: v3 when frozen and it
+    """The frozen model whose forecasts the map shows: the latest of v4, v3 that
     covers the department, else v2 for the Var, else none (past years only)."""
+    if model_v4.MODEL_DIR.exists() and CODE in model_v4.DEPARTMENTS:
+        return model_v4.VERSION
     if model_v3.MODEL_DIR.exists() and CODE in model_v3.DEPARTMENTS:
         return model_v3.VERSION
     return VERSION if CODE == FROZEN_DEPARTMENT else None
@@ -98,12 +100,16 @@ def build() -> dict:
     panel = build_panel(forecast=model is not None)
     labelled = panel[panel.target.notna()]
     loyo = model_v3.OUT_DIR / f"{CODE}_loyo.parquet"
-    if model == model_v3.VERSION and loyo.exists():
+    if model == model_v4.VERSION:
+        past = model_v4.past_predictions(CODE)  # every-year test: each year hidden in every department
+    elif model == model_v3.VERSION and loyo.exists():
         past = pd.read_parquet(loyo).p  # v3 every-year test: each year hidden in every department
     else:
         past = leave_one_year_out(labelled, {"small": small})["small"]
     future = panel[panel.target.isna()]
-    if model == model_v3.VERSION:
+    if model == model_v4.VERSION:
+        parts = [past, model_v4.predict(future, CODE)]
+    elif model == model_v3.VERSION:
         parts = [past, model_v3.predict(future, CODE)]
     else:
         parts = [past, predict(future)] if model else [past]

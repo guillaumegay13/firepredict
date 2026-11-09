@@ -72,7 +72,22 @@ The forecast for day D+1 is issued on the morning of day D and uses data up to D
 
 Larger models (CatBoost, the Timestral time-series model) were tested too. They do no better and are less consistent from year to year.
 
-### Version 3: one model for several departments
+### Version 4: the current model (research candidate)
+
+`small_commune_v4` ([`models/small_commune_v4/`](models/small_commune_v4/), frozen on 9 November 2026) is the model behind the map and the archive [`forecasts/v4/`](forecasts/v4/). It is one logistic regression for the Var and the Bouches-du-Rhône, chosen from a ladder of variants tested the same way (`python -m firepredict.model_v4 evaluate`):
+
+- **each commune's usual rate**, as positive commune-days per usable day, smoothed toward its department's rate (empirical Bayes), so a commune with little history is not judged on a handful of fires;
+- **local FWI, 30-day rain minus evaporation, the burning periods**, as before;
+- **the date as a smooth yearly curve**, which can differ by department, instead of the v3 "usual rate × summer" term;
+- **each commune's own seasonal pattern**, its share of fire days in June–September smoothed toward its department's share, so Aix-en-Provence keeps its summer peak and Draguignan its flatter pattern.
+
+Compared with v3, it has a lower log loss in every test, and corrects v3's clear calibration failures: the Var's summer overestimated by 1.6× in the forward test, and the Bouches-du-Rhône winter overestimated by 3.6×. Variants adding recency weights or a sharper seasonal curve were not reliably better, so the simplest was kept.
+
+> **Status.** Frozen as a research candidate for an outcome-blinded evaluation on 2026 labels. Historically it has a lower log loss than v2/v3, but it did not meet the original calibration acceptance criteria. An exploratory protocol, defined after inspecting results, found no clearly failing calibration groups; many groups remain inconclusive. Reliable subgroup calibration, superiority to the other variants, and operational usefulness have not been established.
+
+The 2026 scoring rule is written in `models/small_commune_v4/metadata.json` (SHA-256 of `forecasts_2026.csv`: `1770b0b5e51aea65d39383043e3a7480d063574a1160d3eb52bfae00237b959e`). Versions 2 and 3 stay frozen, and their archives keep running, so all three can be compared on 2026.
+
+### Version 3: one model for several departments (superseded by v4)
 
 `small_commune_v3` ([`models/small_commune_v3/`](models/small_commune_v3/), frozen on 9 November 2026) is a single logistic regression trained on the Var and the Bouches-du-Rhône together (2,140 positive commune-days). It adds two inputs to the five above:
 
@@ -87,7 +102,7 @@ Every-year test, each year hidden in both departments at once:
 | FWI × commune history | 0.757; v3 better in 17 / 19 years | 0.858; v3 better in 13 / 20 years |
 | 15 communes a day: positive commune-days caught | 219 (reference 220) | 630 (reference 605) |
 
-The map and the archive [`forecasts/v3/`](forecasts/v3/) use v3 for both departments. The v2 archive for the Var (`forecasts/*.csv`) keeps running unchanged, so the original live test continues. Version 3 has its own 2026 test (SHA-256 of `forecasts_2026.csv`: `783debd1cd6848fb0cd667ef2abc418a2221379c9698366e1e6ead8eae0a856c`).
+The archive [`forecasts/v3/`](forecasts/v3/) keeps running for comparison; the map now uses v4. The v2 archive for the Var (`forecasts/*.csv`) keeps running unchanged, so the original live test continues. Version 3 has its own 2026 test (SHA-256 of `forecasts_2026.csv`: `783debd1cd6848fb0cd667ef2abc418a2221379c9698366e1e6ead8eae0a856c`).
 
 ## Run it
 

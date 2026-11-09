@@ -1,0 +1,63 @@
+{
+  "version": "small_commune_v4",
+  "ladder_step": "F + commune season",
+  "status": "Frozen as a research candidate for an outcome-blinded evaluation on 2026 labels. Historically it has a lower log loss than v2/v3, but it did not meet the original calibration acceptance criteria. An exploratory protocol, defined after inspecting results, found no clearly failing calibration groups; many groups remain inconclusive. Reliable subgroup calibration, superiority to the G/H1/H2 variants, and operational usefulness have not been established.",
+  "scoring_2026": "Labels: BDIFF fires >= 0.1 ha, first publication covering all of 2026, commune of first alert, positive commune-day = at least one such fire. Scored as frozen, both departments separately, on 1 Jan - 9 Nov 2026 (retrospective, outcome-blinded) and on later days archived in forecasts/v4/ (live): log loss, ROC AUC, positive commune-days caught by the daily top 15, E/O by season (Nov-Jan, Feb-Mar, Apr-May, Jun-Sep, Oct) with Poisson ranges (a single year cannot be resampled). Compared with v2 (Var), v3, FWI alone and FWI x commune history on the same commune-days. If BDIFF's 2026 records look incomplete (as the Var's 2024), report and do not score that department.",
+  "frozen_at": "2026-11-09T20:39:42+00:00",
+  "git_commit": "b0959fce96236706043dfb4e2d5b44bf1e59f71e",
+  "departments": [
+    "83",
+    "13"
+  ],
+  "inputs": [
+    "log_rate",
+    "log_local_fwi",
+    "local_wb_30d",
+    "orange_period",
+    "red_period",
+    "dept_13",
+    "doy_sin",
+    "doy_cos",
+    "dept_13_doy_sin",
+    "dept_13_doy_cos",
+    "commune_season"
+  ],
+  "weights_standardised": {
+    "log_rate": 0.8589,
+    "log_local_fwi": 0.648,
+    "local_wb_30d": -0.5076,
+    "orange_period": 0.2241,
+    "red_period": -0.0982,
+    "dept_13": -0.1265,
+    "doy_sin": 0.1003,
+    "doy_cos": 0.0457,
+    "dept_13_doy_sin": -0.0615,
+    "dept_13_doy_cos": -0.2581,
+    "commune_season": 0.2477
+  },
+  "fill_values": {
+    "log_rate": -7.162573,
+    "log_local_fwi": 2.753336,
+    "local_wb_30d": -39.099998,
+    "orange_period": 0.0,
+    "red_period": 0.0,
+    "dept_13": 0.0,
+    "doy_sin": -0.006451,
+    "doy_cos": -0.011826,
+    "dept_13_doy_sin": 0.0,
+    "dept_13_doy_cos": 0.0,
+    "commune_season": 0.0
+  },
+  "training_positive_commune_days": {
+    "83": 902,
+    "13": 1238
+  },
+  "model_sha256": "e6d325ad97b861d793991c79189eb8a802d927303c6a70604c8e73bffa37702f",
+  "forecasts_2026": {
+    "kind": "outcome-blinded retrospective forecasts",
+    "rows": 85136,
+    "first_day": "2026-01-01",
+    "last_day": "2026-11-09",
+    "sha256": "1770b0b5e51aea65d39383043e3a7480d063574a1160d3eb52bfae00237b959e"
+  }
+}

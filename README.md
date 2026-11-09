@@ -4,6 +4,8 @@
 
 Every morning, the model gives each of the Var's 153 communes a chance that a fire of 0.1 ha or more starts there the next day. It combines a Fire Weather Index (FWI) computed for each commune from Météo-France stations with three things the FWI leaves out: each commune's usual fire rate, the burning calendar set by the prefecture, and one month of dryness (rain minus evaporation).
 
+**Live map, updated every morning:** https://guillaumegay13.github.io/firepredict/
+
 The frozen model and its model card are also on Hugging Face: [GuillaumeGay/firepredict-var-small-commune](https://huggingface.co/GuillaumeGay/firepredict-var-small-commune).
 
 > **Status: research preview.** This is not an official warning tool. Fire danger warnings in France are issued by Météo-France and the prefectures. The results below are exploratory (see [Limits](#limits)); the clean test is the 2026 one.

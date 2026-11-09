@@ -1,0 +1,103 @@
+.github/workflows/tests.yml
+  s_7d92950cd45a5d::t_0eafcec62d489d 1-18
+.gitignore
+  s_7d92950cd45a5d::t_e85961ee5318a0 1-18
+.python-version
+  s_7d92950cd45a5d::t_bf27f9d6ed311d 1
+LICENSE
+  s_41a2d1b132ad71::t_3f4b1747c625fe 1-21
+README.md
+  s_7d92950cd45a5d::t_00c45cfc57f3f6 1-137
+models/small_commune_v2/forecasts_2026.csv
+  s_df17c2731cbf68::t_e7465ccfa9e554 1-47890
+models/small_commune_v2/metadata.json
+  s_df17c2731cbf68::t_6b40cef0975308 1-153
+models/small_commune_v2/usual_rates.csv
+  s_df17c2731cbf68::t_322415b3c6424a 1-154
+pyproject.toml
+  s_7d92950cd45a5d::t_914717f6138ba6 1-45
+reports/phase1_results.md
+  s_7d92950cd45a5d::t_03e98668930d9f 1-290
+src/firepredict/__init__.py
+  s_7d92950cd45a5d::t_d7664cfdb6f0a2 1-2
+src/firepredict/audit.py
+  s_7d92950cd45a5d::t_378e634a3765a9 1-138
+src/firepredict/calibration.py
+  s_7d92950cd45a5d::t_d3e5e02cf98eb8 1-116
+src/firepredict/certs/harica-geant-tls-r1.pem
+  s_7d92950cd45a5d::t_0ab34245fe19ca 1-35
+src/firepredict/communes.py
+  s_7d92950cd45a5d::t_d88f8796991842 1-110
+src/firepredict/compare_communes.py
+  s_7d92950cd45a5d::t_a886116e746a2c 1-174
+src/firepredict/compare_years.py
+  s_7d92950cd45a5d::t_3e085c8ac7a441 1-128
+src/firepredict/dataset.py
+  s_7d92950cd45a5d::t_18d28e23ea5b85 1-190
+src/firepredict/download.py
+  s_7d92950cd45a5d::t_1e5f77a374f09e 1-264
+src/firepredict/drought_check.py
+  s_7d92950cd45a5d::t_3beb68ef7d135d 1-81
+src/firepredict/features.py
+  s_7d92950cd45a5d::t_e42c3de7d99807 1-206
+src/firepredict/freeze.py
+  s_7d92950cd45a5d::t_f186e614785571 1-129
+src/firepredict/human_check.py
+  s_7d92950cd45a5d::t_13512ae6c39c9e 1-162
+src/firepredict/landscape.py
+  s_7d92950cd45a5d::t_1a92c1338352de 1-102
+src/firepredict/model_catboost.py
+  s_7d92950cd45a5d::t_9d9895aed97dc3 1-98
+src/firepredict/model_communes.py
+  s_7d92950cd45a5d::t_a1d929d0a8612f 1-272
+src/firepredict/model_spatial.py
+  s_7d92950cd45a5d::t_0b8d55af245eff 1-113
+src/firepredict/risk_map.py
+  s_7d92950cd45a5d::t_ea48ff86b17108 1-130
+src/firepredict/risk_map_template.html
+  s_7d92950cd45a5d::t_bb0b4999123845 1-186
+src/firepredict/robustness.py
+  s_7d92950cd45a5d::t_c6b01f716da998 1-48
+src/firepredict/value_check.py
+  s_7d92950cd45a5d::t_013d7d55224bb0 1-114
+tests/test_evaluate.py
+  s_7d92950cd45a5d::t_1624c912a89c7b 1-10
+tests/test_features.py
+  s_7d92950cd45a5d::t_4117799a232d62 1-102
+tests/test_targets.py
+  s_7d92950cd45a5d::t_e9832f64b1c6a9 1-20
+uv.lock
+  s_7d92950cd45a5d::t_f0e3e9072e3d42 1-2518
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a0b5345328ac971bdc34bc0f97059a7ebef80870",
+  "prompts": {},
+  "sessions": {
+    "s_41a2d1b132ad71": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f81598fd-c619-4518-9223-7592712c6a19",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    },
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    },
+    "s_df17c2731cbf68": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aaf75ffb-1f05-4901-8b25-3d20b3045952",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

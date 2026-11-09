@@ -1,0 +1,21 @@
+src/firepredict/risk_map.py
+  s_7d92950cd45a5d::t_2b6eca0a7f3291 10-12,27,82
+src/firepredict/download.py
+  s_7d92950cd45a5d::t_02cb4719e8f04b 135-143,245
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d3c25575eb0e6b9bf0d37ec861c0ced6cd6c0cc8",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

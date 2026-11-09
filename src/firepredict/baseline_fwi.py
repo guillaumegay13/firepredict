@@ -16,12 +16,12 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import f1_score
 
-from firepredict.dataset import PROCESSED_DIR, ROOT
+from firepredict.dataset import PROCESSED_DIR, RESULTS_DIR
 from firepredict.evaluate import scores
 from firepredict.features import SETTINGS, make_xy
 from firepredict.targets import RiskClasses, split_of
 
-OUT = ROOT / "results" / "baseline_fwi.csv"
+OUT = RESULTS_DIR / "baseline_fwi.csv"
 HORIZONS = [0, 1]
 
 

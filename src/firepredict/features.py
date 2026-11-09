@@ -4,7 +4,7 @@
    day t or before (weather, rain history, FWI).
    No input is built from recent fire records: BDIFF publishes a year's fires
    months later, so a live forecast could not know them.
-   Saved to data/processed/features.parquet.
+   Saved to data/processed/<department>/features.parquet.
 
 2. make_xy(state, daily, horizon, setting): model inputs for a forecast
    issued on the morning of day D, once Météo-France's day D-1 is complete.
@@ -24,9 +24,10 @@ import pandas as pd
 import xarray as xr
 from xclim.indicators.atmos import cffwis_indices
 
+from firepredict import department
 from firepredict.dataset import PROCESSED_DIR, RAW_DIR
 
-VAR_LATITUDE = 43.4  # centre of the department; sets day length in DMC/DC
+LATITUDE = department.SETTINGS.latitude  # centre of the department; sets day length in DMC/DC
 
 WEATHER_COLS = [
     "tx_mean", "tx_max", "tn_mean", "tn_min", "rr_mean", "rr_max",
@@ -53,7 +54,7 @@ def fwi(daily: pd.DataFrame) -> pd.DataFrame:
     Inputs are averaged over the core stations first, then FWI is computed
     once for the department.
 
-    No fire-season start/stop: in the Var fires happen all year, so the codes
+    No fire-season start/stop: in Provence fires happen all year, so the codes
     run every day (xclim season_method=None). The first weeks of 2006 are a
     spin-up from the default start values and should not be trusted.
 
@@ -74,7 +75,7 @@ def fwi(daily: pd.DataFrame) -> pd.DataFrame:
         pr=series("rr_mean", "mm/d"),
         sfcWind=series("ffm_mean", "m/s"),
         hurs=series("un_mean", "%"),
-        lat=xr.DataArray(VAR_LATITUDE, attrs={"units": "degrees_north"}),
+        lat=xr.DataArray(LATITUDE, attrs={"units": "degrees_north"}),
         season_method=None,
     )
     out = pd.DataFrame(
@@ -154,7 +155,7 @@ def calendar(dates: pd.DatetimeIndex) -> pd.DataFrame:
     public = holidays.France(years=range(dates.year.min(), dates.year.max() + 1))
     school = pd.read_csv(
         RAW_DIR / "calendar" / "vacances_scolaires.csv", parse_dates=["date"], index_col="date"
-    ).vacances_zone_b  # académie de Nice
+    )[department.SETTINGS.school_zone]
     return pd.DataFrame(
         {
             "day_of_week": dates.day_of_week,

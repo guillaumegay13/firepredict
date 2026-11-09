@@ -1,6 +1,6 @@
-"""One row per Var commune: land cover, people, nearest weather stations, fire history.
+"""One row per commune of the department: land cover, people, nearest weather stations, fire history.
 
-Output: data/processed/communes.parquet (+ communes.geojson for maps)
+Output: data/processed/<department>/communes.parquet (+ communes.geojson for maps)
 
 Land cover comes from Corine Land Cover 2018 (25 ha minimum mapping unit):
   forest        311-313   broad-leaved, coniferous, mixed forest
@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 
 from firepredict.dataset import MIN_FIRE_HA, PROCESSED_DIR, RAW_DIR, core_stations, load_bdiff, load_meteo
+from firepredict.department import CODE
 from firepredict.targets import SPLITS
 
 LAMBERT93 = 2154
@@ -33,7 +34,7 @@ STATION_VARS = ["TX", "RR", "FFM", "UN", "ETPGRILLE"]
 
 
 def load_communes() -> gpd.GeoDataFrame:
-    communes = gpd.read_file(RAW_DIR / "geography" / "communes_83.geojson").to_crs(LAMBERT93)
+    communes = gpd.read_file(RAW_DIR / "geography" / f"communes_{CODE}.geojson").to_crs(LAMBERT93)
     communes = communes.rename(columns={"code": "insee", "nom": "name"}).set_index("insee")
     communes["area_km2"] = communes.area / 1e6
     communes["density"] = communes.population / communes.area_km2
@@ -41,7 +42,7 @@ def load_communes() -> gpd.GeoDataFrame:
 
 
 def land_cover(communes: gpd.GeoDataFrame) -> pd.DataFrame:
-    corine = gpd.read_file(RAW_DIR / "geography" / "corine_2018_83.geojson").to_crs(LAMBERT93)
+    corine = gpd.read_file(RAW_DIR / "geography" / f"corine_2018_{CODE}.geojson").to_crs(LAMBERT93)
     corine["cover"] = None
     for name, prefixes in COVER.items():
         corine.loc[corine.code_18.str.startswith(prefixes), "cover"] = name
@@ -63,7 +64,7 @@ def nearest_stations(communes: gpd.GeoDataFrame) -> pd.DataFrame:
     meteo = load_meteo()
     coords = pd.concat(
         [pd.read_csv(p, sep=";", usecols=["NUM_POSTE", "LAT", "LON"], dtype={"NUM_POSTE": str})
-         for p in (RAW_DIR / "meteofrance").glob("Q_83_*_RR-T-Vent.csv.gz")]
+         for p in (RAW_DIR / "meteofrance").glob(f"Q_{CODE}_*_RR-T-Vent.csv.gz")]
     ).drop_duplicates("NUM_POSTE").set_index("NUM_POSTE")  # fmt: skip
     stations = gpd.GeoDataFrame(
         coords, geometry=gpd.points_from_xy(coords.LON, coords.LAT), crs=4326

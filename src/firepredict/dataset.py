@@ -1,8 +1,8 @@
-"""Build the daily Var table: one row per date, fire labels + department weather.
+"""Build the daily department table: one row per date, fire labels + department weather.
 
-Output: data/processed/daily.parquet
+Output: data/processed/<department>/daily.parquet
 
-Label rules (see results/audit/data_audit.md for the evidence):
+Label rules (see results/<department>/audit/data_audit.md for the evidence):
 - The main target counts fires of at least MIN_FIRE_HA. BDIFF changed its
   fire form in 2023 and started recording many more tiny fires; this cut-off
   removes most of that artifact. Columns for all fires are kept for
@@ -29,13 +29,16 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from firepredict.department import CODE, SETTINGS
+
 ROOT = Path(__file__).resolve().parents[2]
-RAW_DIR = ROOT / "data" / "raw"
-PROCESSED_DIR = ROOT / "data" / "processed"
+RAW_DIR = ROOT / "data" / "raw" / CODE
+PROCESSED_DIR = ROOT / "data" / "processed" / CODE
+RESULTS_DIR = ROOT / "results" / CODE
 
 START = "2006-01-01"
 MIN_FIRE_HA = 0.1
-UNRELIABLE_YEARS = [2024]  # Var almost empty in BDIFF (3 fires)
+UNRELIABLE_YEARS = list(SETTINGS.unreliable_years)
 CORE_COVERAGE = 0.95
 DOUBTFUL = 2  # Météo-France quality code: "donnée douteuse en cours de vérification"
 
@@ -103,7 +106,7 @@ def load_meteo() -> pd.DataFrame:
     for family in sorted(set(WEATHER_VARS.values())):
         cols = [v for v, f in WEATHER_VARS.items() if f == family]
         parts = []
-        for path in sorted((RAW_DIR / "meteofrance").glob(f"Q_83_*_{family}.csv.gz")):
+        for path in sorted((RAW_DIR / "meteofrance").glob(f"Q_{CODE}_*_{family}.csv.gz")):
             df = pd.read_csv(
                 path,
                 sep=";",

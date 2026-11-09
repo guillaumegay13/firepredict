@@ -2,8 +2,8 @@
 
 Same every-year protocol as compare_communes (each of 19 years hidden in
 turn). References:
-  - FWI alone (Var):  the official index, the same value for every commune;
-                      it can only tell days apart, not communes
+  - FWI alone:        the official index, one value for the department and
+                      every commune; it can only tell days apart, not communes
   - local FWI alone:  FWI from each commune's nearest stations, closer to the
                       zone-level danger forecasts fire services use
   - history x FWI:    the strongest FWI-based reference (adds commune history)
@@ -28,14 +28,16 @@ import pandas as pd
 from sklearn.metrics import roc_auc_score
 
 from firepredict.compare_communes import history_x, leave_one_year_out, small
-from firepredict.dataset import ROOT
+from firepredict.dataset import RESULTS_DIR
+from firepredict.department import SETTINGS
 from firepredict.model_communes import HORIZON, build_panel
 
-OUT = ROOT / "results" / "value_check.csv"
+OUT = RESULTS_DIR / "value_check.csv"
 BUDGETS = [0.01, 0.05, 0.10]
 DAILY_K = [5, 15, 30]
 MODEL = "small model"
-REFERENCES = ["FWI alone (Var)", "local FWI alone", "history x FWI"]
+FWI_ALONE = f"FWI alone ({SETTINGS.name})"
+REFERENCES = [FWI_ALONE, "local FWI alone", "history x FWI"]
 N_BOOT = 1000
 
 
@@ -55,12 +57,17 @@ def daily_caught(panel: pd.DataFrame, score: np.ndarray, year: np.ndarray) -> pd
 def run() -> pd.DataFrame:
     panel = build_panel()
     models = {
-        "FWI alone (Var)": lambda fold, test: fold.fwi[test].to_numpy(),
+        FWI_ALONE: lambda fold, test: fold.fwi[test].to_numpy(),
         "local FWI alone": lambda fold, test: fold.local_fwi[test].to_numpy(),
         "history x FWI": history_x("fwi"),
         MODEL: small,
     }
-    scores = leave_one_year_out(panel, models)
+    return gains(panel, leave_one_year_out(panel, models))
+
+
+def gains(panel: pd.DataFrame, scores: dict[str, pd.Series], model: str = MODEL,
+          references: list[str] = REFERENCES) -> pd.DataFrame:  # fmt: skip
+    """Gain of `model` over each reference: AUC by year, pooled budgets, daily capacity."""
     rng = np.random.default_rng(0)
     jitter = rng.uniform(0, 1e-9, len(panel))  # random tie-breaking, tiny next to real differences
     year = (panel.index.get_level_values("date") + pd.Timedelta(days=HORIZON)).year.to_numpy()
@@ -70,7 +77,7 @@ def run() -> pd.DataFrame:
     blocks = {yr: np.flatnonzero(year == yr) for yr in years}
     auc_by_year = {name: np.array([roc_auc_score(y[blocks[yr]], v[blocks[yr]]) for yr in years]) for name, v in s.items()}
 
-    names = [*REFERENCES, MODEL]
+    names = [*references, model]
     full = {name: caught(y, s[name]) for name in names}
     boot = {name: [] for name in names}
     for _ in range(N_BOOT):
@@ -82,25 +89,25 @@ def run() -> pd.DataFrame:
     draws = [rng.choice(years, len(years)) for _ in range(N_BOOT)]
 
     rows = []
-    for ref in REFERENCES:
-        d_auc = auc_by_year[MODEL] - auc_by_year[ref]
+    for ref in references:
+        d_auc = auc_by_year[model] - auc_by_year[ref]
         boot_auc = [d_auc[rng.integers(0, len(years), len(years))].mean() for _ in range(N_BOOT)]
         row = {"reference": ref, "ref AUC": round(auc_by_year[ref].mean(), 3),
-               "model AUC": round(auc_by_year[MODEL].mean(), 3), "AUC gain": round(d_auc.mean(), 3),
+               "model AUC": round(auc_by_year[model].mean(), 3), "AUC gain": round(d_auc.mean(), 3),
                "AUC gain 95%": np.percentile(boot_auc, [2.5, 97.5]).round(3).tolist(),
                "years better": f"{(d_auc > 0).sum()}/{len(years)}"}  # fmt: skip
-        gains = boot[MODEL] / boot[ref] - 1
+        ratio = boot[model] / boot[ref] - 1
         for j, share in enumerate(BUDGETS):
-            low, high = np.nanpercentile(gains[:, j], [2.5, 97.5])
-            base, model = full[ref][j], full[MODEL][j]
-            row[f"{share:.0%}: fires ref -> model"] = f"{base} -> {model}"
-            row[f"{share:.0%}: gain (95%)"] = f"{model / base - 1:+.0%} ({low:+.0%} to {high:+.0%})"
+            low, high = np.nanpercentile(ratio[:, j], [2.5, 97.5])
+            base, ours = full[ref][j], full[model][j]
+            row[f"{share:.0%}: fires ref -> model"] = f"{base} -> {ours}"
+            row[f"{share:.0%}: gain (95%)"] = f"{ours / base - 1:+.0%} ({low:+.0%} to {high:+.0%})"
         for k in DAILY_K:
-            base, model = daily[ref][k], daily[MODEL][k]
-            ratios = [model.loc[d].sum() / base.loc[d].sum() - 1 for d in draws]
+            base, ours = daily[ref][k], daily[model][k]
+            ratios = [ours.loc[d].sum() / base.loc[d].sum() - 1 for d in draws]
             low, high = np.nanpercentile(ratios, [2.5, 97.5])
-            row[f"top {k}/day: ref -> model"] = f"{base.sum()} -> {model.sum()}"
-            row[f"top {k}/day: gain (95%)"] = f"{model.sum() / base.sum() - 1:+.0%} ({low:+.0%} to {high:+.0%})"
+            row[f"top {k}/day: ref -> model"] = f"{base.sum()} -> {ours.sum()}"
+            row[f"top {k}/day: gain (95%)"] = f"{ours.sum() / base.sum() - 1:+.0%} ({low:+.0%} to {high:+.0%})"
         rows.append(row)
     return pd.DataFrame(rows).set_index("reference")
 

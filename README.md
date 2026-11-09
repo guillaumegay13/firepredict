@@ -6,7 +6,7 @@ Every morning, the model gives each of the Var's 153 communes a chance that a fi
 
 **Live map, updated every morning:** https://guillaumegay13.github.io/firepredict/
 
-The frozen model and its model card are also on Hugging Face: [GuillaumeGay/firepredict-var-small-commune](https://huggingface.co/GuillaumeGay/firepredict-var-small-commune).
+The frozen model and its model card are also on Hugging Face: [GuillaumeGay/firepredict](https://huggingface.co/GuillaumeGay/firepredict).
 
 > **Status: research preview.** This is not an official warning tool. Fire danger warnings in France are issued by Météo-France and the prefectures. The results below are exploratory (see [Limits](#limits)); the clean test is the 2026 one.
 
@@ -74,7 +74,7 @@ Larger models (CatBoost, the Timestral time-series model) were tested too. They 
 
 ## Run it
 
-Requirements: [uv](https://docs.astral.sh/uv/), Python 3.12, about 4 GB of disk (the IGN BD TOPO for the Var is 455 MB compressed, 2.7 GB unpacked).
+Requirements: [uv](https://docs.astral.sh/uv/), Python 3.12, about 4 GB of free disk (the IGN BD TOPO for the Var is 455 MB compressed and 2.7 GB unpacked; only the three layers used, 1.4 GB, are kept).
 
 ```bash
 git clone https://github.com/guillaumegay13/firepredict.git
@@ -92,28 +92,41 @@ uv run python -m firepredict.pipeline all        # also the slow secondary analy
 uv run pytest                                    # tests
 ```
 
-The map is written to `results/risk_map.html`, a single page to open in a browser: one colour per commune, real fire starts as dots, and a pop-up with local weather for each commune. Past days (2023, 2025) show predictions made with that year hidden; 2026 shows the frozen model's forecasts. Each step can also be run on its own, for example `uv run python -m firepredict.value_check`.
+### Other departments
+
+The department is chosen with `--department` (or the environment variable `FIREPREDICT_DEPARTMENT`); the default is the Var (83). Each department has its own folders (`data/raw/13/`, `data/processed/13/`, `results/13/`), and its settings in [`department.py`](src/firepredict/department.py): school-holiday zone, years with unusable fire records, FWI latitude, and the burning calendar of its prefectoral orders, as dated rules. The Bouches-du-Rhône (13) is set up:
+
+```bash
+uv run python -m firepredict.pipeline --department 13   # download, build, evaluate (no frozen model: no forecast stage)
+uv run python -m firepredict.transfer                   # learn on one department, forecast the other; results/transfer/
+```
+
+To add a department, add its settings to `department.py` first. Only the three BD TOPO layers used are kept (about 1.5 GB per department).
+
+Data downloaded before departments had their own folders sit directly in `data/raw/`; move them to `data/raw/83/` (and `data/processed/` to `data/processed/83/`) to reuse them.
+
+The map is written to `results/83/risk_map.html`, a single page to open in a browser: one colour per commune, real fire starts as dots, and a pop-up with local weather for each commune. Past days (2023, 2025) show predictions made with that year hidden; 2026 shows the frozen model's forecasts. Each step can also be run on its own, for example `uv run python -m firepredict.value_check`.
 
 ## Data and credits
 
-Raw data is downloaded by the code into `data/raw/` and is not redistributed in this repository. Every file is recorded with its URL, download date and SHA-256 in `data/raw/manifest.json`.
+Raw data is downloaded by the code into `data/raw/<department>/` and is not redistributed in this repository. Every file is recorded with its URL, download date and SHA-256 in `data/raw/<department>/manifest.json`.
 
 | Data | Provider | Licence |
 |---|---|---|
 | Fire records 2006–2025 (BDIFF) | Ministère de l'Agriculture, [bdiff.agriculture.gouv.fr](https://bdiff.agriculture.gouv.fr) | see below |
-| Daily weather, all Var stations | Météo-France, via [data.gouv.fr](https://www.data.gouv.fr/datasets/donnees-climatologiques-de-base-quotidiennes) | Licence Ouverte / Etalab 2.0 |
+| Daily weather, all stations of the department | Météo-France, via [data.gouv.fr](https://www.data.gouv.fr/datasets/donnees-climatologiques-de-base-quotidiennes) | Licence Ouverte / Etalab 2.0 |
 | Buildings, roads, vegetation (BD TOPO, September 2026) | IGN, [geoservices.ign.fr](https://geoservices.ign.fr/bdtopo) | Licence Ouverte / Etalab 2.0 |
-| Burned-area outlines | DDTM du Var, via data.gouv.fr | Licence Ouverte / Etalab 2.0 |
+| Burned-area outlines (Var only) | DDTM du Var, via data.gouv.fr | Licence Ouverte / Etalab 2.0 |
 | Land cover (Corine Land Cover 2018) | Copernicus / IGN Géoplateforme | Copernicus open data |
 | Commune boundaries and population | geo.api.gouv.fr (IGN, INSEE) | Licence Ouverte / Etalab 2.0 |
 | School holidays | [vacances-scolaires](https://github.com/AntoineAugusti/vacances-scolaires), from Ministère de l'Éducation nationale open data | see the repository |
-| Burning calendar | Var prefectoral orders of 16 May 2013 and 2 November 2025 | public acts |
+| Burning calendar | Var prefectoral orders of 16 May 2013 and 2 November 2025; Bouches-du-Rhône orders of 19 May 2004 and 20 December 2013 (sources in `department.py`) | public acts |
 
 **BDIFF.** Source : Base de Données sur les Incendies de Forêts en France, [bdiff.agriculture.gouv.fr](https://bdiff.agriculture.gouv.fr). Droits de reproduction réservés et strictement limités. BDIFF data may be reused for personal, associative or professional purposes, unchanged, with this source cited, and may not be sold or rented. This repository does not contain BDIFF data; the code downloads it from the official site.
 
 ## Limits
 
-- **2024 is excluded:** BDIFF holds only 3 Var fires for 2024, against 50–380 in other years.
+- **2024 is excluded for the Var:** BDIFF holds only 3 Var fires for 2024, against 50–380 in other years. The Bouches-du-Rhône's 2024 looks normal and is kept.
 - **2023 form change:** BDIFF started recording many more tiny fires in 2023, so only fires of 0.1 ha or more are counted.
 - **Locations are communes:** BDIFF gives the commune of each fire, not its position.
 - **One BD TOPO edition (2026) is used for every year**, so recent buildings are counted for earlier years too.
@@ -121,7 +134,7 @@ Raw data is downloaded by the code into `data/raw/` and is not redistributed in 
 - **Exploratory results:** the inputs and the 30-day window were chosen after looking at these same years, so p-values and ranges are optimistic. The ranges are conditional on the chosen model.
 - **Approximate FWI:** computed from daily station values, not the official noon-based FWI or Météo-France's forecasts.
 - **Past features use later knowledge:** weather stations were chosen by their coverage over 2006–2026, and the leave-one-year-out test trains on years after the one it scores.
-- **One department:** the results have not yet been checked on other departments.
+- **Two departments:** the Bouches-du-Rhône was added as a second department, with a transfer test between the two ([report](reports/bouches_du_rhone_and_transfer.md)). Other departments need their settings, mainly their burning orders, added to `department.py`.
 
 ## Repository layout
 

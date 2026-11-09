@@ -19,12 +19,12 @@ import pandas as pd
 from catboost import CatBoostClassifier
 
 from firepredict.baseline_fwi import fit_class_cuts
-from firepredict.dataset import PROCESSED_DIR, ROOT
+from firepredict.dataset import PROCESSED_DIR, RESULTS_DIR
 from firepredict.evaluate import confusion, scores
 from firepredict.features import make_xy
 from firepredict.targets import RiskClasses, split_of
 
-OUT_DIR = ROOT / "results"
+OUT_DIR = RESULTS_DIR
 SEEDS = [0, 1, 2, 3, 4]
 ZERO_SHARES = [1.0, 0.5, 0.25, 0.1]
 TEST_SPLITS = ["val", "test", "test_2025"]
@@ -88,6 +88,7 @@ if __name__ == "__main__":
     pd.set_option("display.width", 200)
     setting = sys.argv[1] if len(sys.argv) > 1 else "operational"
     results, confusions = run(setting=setting)
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
     results.to_csv(OUT_DIR / f"catboost_classes_{setting}.csv", index=False)
     cols = ["iou", "under", "over", "f1", "precision", "recall"]
     summary = results.groupby(["split", "model"])[cols].agg(["mean", "std"]).round(2)

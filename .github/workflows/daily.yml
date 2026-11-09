@@ -29,7 +29,7 @@ jobs:
           python-version: "3.12"
       - run: uv sync
       - name: Fixed tables (see static/README.md)
-        run: mkdir -p data/processed && cp static/*.parquet data/processed/
+        run: mkdir -p data/processed/83 && cp static/*.parquet data/processed/83/
       - name: Download fire records, weather, calendar, commune boundaries
         run: uv run python -m firepredict.download bdiff meteo calendar communes
       - run: uv run python -m firepredict.dataset
@@ -44,7 +44,7 @@ jobs:
           git diff --cached --quiet || git commit -m "Forecast archive: $(ls forecasts | tail -1 | sed 's/.csv//')"
           git push
       - name: Prepare the site
-        run: mkdir -p site && cp results/risk_map.html site/index.html
+        run: mkdir -p site && cp results/83/risk_map.html site/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

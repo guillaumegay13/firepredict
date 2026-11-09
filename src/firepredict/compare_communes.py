@@ -1,9 +1,9 @@
 """Commune models vs FWI references, judged on every year.
 
 Question: "will a fire >= 0.1 ha start in this commune tomorrow?" (J+1,
-operational). Leave-one-year-out over 2006-2025 (without 2024): each year is
-hidden in turn, models learn on the other years, and rank the hidden year's
-commune-days.
+operational). Leave-one-year-out over 2006-2025 (without unusable years, such
+as 2024 for the Var): each year is hidden in turn, models learn on the other
+years, and rank the hidden year's commune-days.
 
 The commune's usual fire rate is recomputed for every hidden year, from the
 other years only, and for each row also without the row's own year, so no
@@ -31,10 +31,10 @@ from catboost import CatBoostClassifier
 from scipy.stats import wilcoxon
 from sklearn.metrics import roc_auc_score
 
-from firepredict.dataset import PROCESSED_DIR, ROOT
+from firepredict.dataset import PROCESSED_DIR, RESULTS_DIR
 from firepredict.model_communes import SMALL, SMALL_LANDSCAPE, HORIZON, TOP_K, build_panel, current_features, fit_small, small_inputs
 
-OUT = ROOT / "results" / "compare_communes.csv"
+OUT = RESULTS_DIR / "compare_communes.csv"
 SPATIAL = PROCESSED_DIR / "spatial_rates.parquet"  # from model_spatial
 REFERENCE = "history x FWI"
 SEEDS = [0, 1, 2, 3, 4]
@@ -146,8 +146,8 @@ def run(with_catboost: bool) -> pd.DataFrame:
     return pd.concat({name: per_year(panel, s) for name, s in scores.items()}, names=["model", "year"])
 
 
-def summary(results: pd.DataFrame) -> pd.DataFrame:
-    ref = results.loc[REFERENCE]
+def summary(results: pd.DataFrame, reference: str = REFERENCE) -> pd.DataFrame:
+    ref = results.loc[reference]
     rows = {}
     for name, r in results.groupby(level="model", sort=False):
         r = r.droplevel("model")

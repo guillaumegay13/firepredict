@@ -15,10 +15,10 @@ import numpy as np
 import pandas as pd
 
 from firepredict.compare_communes import REFERENCE, history_x, leave_one_year_out, per_year, small, summary
-from firepredict.dataset import ROOT
+from firepredict.dataset import RESULTS_DIR
 from firepredict.model_communes import HORIZON, build_panel
 
-OUT = ROOT / "results" / "robustness.csv"
+OUT = RESULTS_DIR / "robustness.csv"
 
 
 def variants() -> dict[str, pd.DataFrame]:

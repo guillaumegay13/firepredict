@@ -28,11 +28,12 @@ import pandas as pd
 from sklearn.metrics import average_precision_score, brier_score_loss, log_loss
 
 from firepredict.compare_communes import history_x, leave_one_year_out, small
-from firepredict.dataset import ROOT
+from firepredict.dataset import RESULTS_DIR
 from firepredict.model_communes import HORIZON, build_panel
+from firepredict.value_check import FWI_ALONE
 
-OUT = ROOT / "results" / "calibration.csv"
-FIGURE = ROOT / "results" / "calibration.png"
+OUT = RESULTS_DIR / "calibration.csv"
+FIGURE = RESULTS_DIR / "calibration.png"
 BANDS = [0, 0.0003, 0.001, 0.003, 0.01, 1]  # the map's colour bands
 BAND_LABELS = ["< 0.03%", "0.03-0.1%", "0.1-0.3%", "0.3-1%", ">= 1%"]
 BUDGET = 0.10
@@ -58,7 +59,7 @@ def run() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     panel = build_panel()
     models = {
         "climatology": lambda fold, test: (fold.usual_rate / DAYS_PER_YEAR)[test].to_numpy(),
-        "FWI alone (Var)": lambda fold, test: fold.fwi[test].to_numpy(),
+        FWI_ALONE: lambda fold, test: fold.fwi[test].to_numpy(),
         "history x FWI": history_x("fwi"),
         "small model": small,
     }
@@ -86,11 +87,11 @@ def run() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
                                  "log loss": log_loss(y, p), "mean predicted": p.mean(), "observed rate": y.mean()}
                           for name, p in probs.items()}).T  # fmt: skip
     table = reliability(y, probs["small model"])
-    plot(table)
+    plot(table, len(years))
     return ranking, proba, table
 
 
-def plot(table: pd.DataFrame) -> None:
+def plot(table: pd.DataFrame, n_years: int) -> None:
     fig, ax = plt.subplots(figsize=(5, 4.5))
     t = table[table["commune-days"] > 0]
     ax.loglog(t.predicted, t.observed, "o-", color="#c9452a", label="small model")
@@ -100,7 +101,7 @@ def plot(table: pd.DataFrame) -> None:
     lims = [1e-4, 3e-2]
     ax.plot(lims, lims, "--", color="grey", label="perfect calibration")
     ax.set(xlim=lims, ylim=lims, xlabel="predicted chance of a fire start", ylabel="observed share of commune-days",
-           title="Calibration, 19 hidden years")  # fmt: skip
+           title=f"Calibration, {n_years} hidden years")  # fmt: skip
     ax.legend()
     fig.tight_layout()
     fig.savefig(FIGURE, dpi=150)

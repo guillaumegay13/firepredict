@@ -13,11 +13,11 @@ Usage:
 import pandas as pd
 from sklearn.metrics import roc_auc_score
 
-from firepredict.dataset import MIN_FIRE_HA, PROCESSED_DIR, ROOT, load_bdiff
+from firepredict.dataset import MIN_FIRE_HA, PROCESSED_DIR, RESULTS_DIR, load_bdiff
 from firepredict.features import drought_state
 from firepredict.targets import SPLITS
 
-OUT = ROOT / "results" / "drought_check.csv"
+OUT = RESULTS_DIR / "drought_check.csv"
 FIRST_DAY = "2006-04-01"  # 90-day windows need 3 months of history
 SIZES_HA = [0, 1, 10, 100]
 SUMMER = [6, 7, 8, 9]

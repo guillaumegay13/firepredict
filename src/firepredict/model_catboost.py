@@ -20,12 +20,12 @@ from catboost import CatBoostClassifier
 from sklearn.metrics import f1_score
 
 from firepredict.baseline_fwi import fit_binary_cut
-from firepredict.dataset import PROCESSED_DIR, ROOT
+from firepredict.dataset import PROCESSED_DIR, RESULTS_DIR
 from firepredict.evaluate import scores
 from firepredict.features import make_xy
 from firepredict.targets import SPLITS, split_of
 
-OUT = ROOT / "results" / "catboost_binary.csv"
+OUT = RESULTS_DIR / "catboost_binary.csv"
 SEEDS = [0, 1, 2, 3, 4]
 TEST_SPLITS = ["val", "test", "test_2025"]
 TRAIN_WINDOWS = {

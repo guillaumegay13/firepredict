@@ -38,11 +38,12 @@ import joblib
 import pandas as pd
 
 from firepredict.dataset import RAW_DIR, ROOT
-from firepredict.download import BDTOPO_EDITION
+from firepredict.department import CODE
 from firepredict.model_communes import HORIZON, SMALL, build_panel, fit_small, small_inputs
 
 VERSION = "small_commune_v2"
 MODELS = ROOT / "models"
+FROZEN_DEPARTMENT = "83"  # the frozen models are the Var's
 TEST_YEAR = 2026
 
 
@@ -64,6 +65,8 @@ def usual_rate_all_years(panel: pd.DataFrame) -> tuple[pd.Series, pd.Series]:
 
 def predict(panel: pd.DataFrame, version: str = VERSION) -> pd.Series:
     """Chance of a fire start for forecast rows, with a frozen model and its saved preprocessing."""
+    if CODE != FROZEN_DEPARTMENT:
+        raise SystemExit(f"the frozen models are for department {FROZEN_DEPARTMENT}, not {CODE}")
     folder = MODELS / version
     model = joblib.load(folder / "model.joblib")
     metadata = json.loads((folder / "metadata.json").read_text())
@@ -78,6 +81,8 @@ def sha256(path) -> str:
 
 
 def freeze() -> dict:
+    if CODE != FROZEN_DEPARTMENT:
+        raise SystemExit(f"the frozen models are for department {FROZEN_DEPARTMENT}, not {CODE}")
     out = MODELS / VERSION
     if out.exists():
         raise SystemExit(f"{out} already exists: frozen versions are never overwritten. Change VERSION.")
@@ -103,7 +108,7 @@ def freeze() -> dict:
         "training_years": sorted(set(target_year(panel)[labelled.to_numpy()])),
         "training_rows": int(labelled.sum()),
         "training_positive_commune_days": int(panel.target[labelled].sum()),
-        "bdtopo_edition": BDTOPO_EDITION,
+        "bdtopo_edition": next((RAW_DIR / "bdtopo").glob("*.gpkg")).stem,
         "raw_data": {k: {"sha256": v["sha256"], "downloaded_at": v["downloaded_at"]}
                      for k, v in json.loads((RAW_DIR / "manifest.json").read_text()).items()},
     }  # fmt: skip

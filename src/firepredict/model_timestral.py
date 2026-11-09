@@ -21,12 +21,12 @@ import numpy as np
 import pandas as pd
 from timestral import TimestralForecaster
 
-from firepredict.dataset import PROCESSED_DIR, ROOT
+from firepredict.dataset import PROCESSED_DIR, RESULTS_DIR
 from firepredict.evaluate import scores
 from firepredict.features import calendar
 from firepredict.targets import SPLITS, RiskClasses, split_of
 
-OUT_DIR = ROOT / "results" / "timestral"
+OUT_DIR = RESULTS_DIR / "timestral"
 SIZES = ["mistralai/Timestral-28M", "mistralai/Timestral-209M"]
 HORIZON = 2  # forecast steps: D (J0) and D+1 (J+1)
 # ~5.6 years of history per forecast. The full 17 years fits the model but is

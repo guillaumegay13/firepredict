@@ -23,11 +23,11 @@ from sklearn.preprocessing import StandardScaler
 
 from firepredict.baseline_fwi import fit_binary_cut
 from firepredict.compare_years import BURNING, data
-from firepredict.dataset import ROOT
+from firepredict.dataset import RESULTS_DIR
 from firepredict.model_catboost import TEST_SPLITS, best_threshold, score_rows
 from firepredict.targets import split_of
 
-OUT = ROOT / "results" / "model_small.csv"
+OUT = RESULTS_DIR / "model_small.csv"
 FEATURES = ["log_fwi", "water_balance_30d", *BURNING]
 
 

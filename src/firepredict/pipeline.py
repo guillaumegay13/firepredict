@@ -9,14 +9,20 @@ Stages, in order:
 Each step is a module of this package, run as `python -m firepredict.<module>`.
 A failing step stops the run.
 
+The department is the Var (83) unless --department or the environment
+variable FIREPREDICT_DEPARTMENT says otherwise (see department.py). The
+"forecast" stage uses the frozen model, which exists for the Var only.
+
 Usage:
     uv run python -m firepredict.pipeline                 # data + evaluate + forecast
     uv run python -m firepredict.pipeline forecast        # today's map only
     uv run python -m firepredict.pipeline all             # everything, including "extra" (hours)
     uv run python -m firepredict.pipeline --list          # show the steps
+    uv run python -m firepredict.pipeline --department 13 # Bouches-du-Rhône: data + evaluate
 """
 
 import argparse
+import os
 import subprocess
 import sys
 import time
@@ -74,8 +80,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("stages", nargs="*", choices=[*STAGES, "all"], help=f"default: {' '.join(DEFAULT)}")
     parser.add_argument("--list", action="store_true", help="print the steps and exit")
+    parser.add_argument("--department", help="department code, e.g. 13 (default: $FIREPREDICT_DEPARTMENT or 83)")
     args = parser.parse_args()
+    if args.department:
+        os.environ["FIREPREDICT_DEPARTMENT"] = args.department  # read by every step
     names = list(STAGES) if "all" in args.stages else (args.stages or DEFAULT)
+    if os.environ.get("FIREPREDICT_DEPARTMENT", "83") != "83" and "forecast" not in args.stages:
+        names = [n for n in names if n != "forecast"]  # no frozen model outside the Var
     for name in names:
         for step in STAGES[name]:
             if args.list:

@@ -46,7 +46,7 @@ def read(layer: str, columns: list[str]) -> gpd.GeoDataFrame:
 
 
 def in_commune(points: gpd.GeoSeries, communes: gpd.GeoDataFrame) -> pd.Series:
-    """INSEE code of the commune containing each point (NaN outside the Var)."""
+    """INSEE code of the commune containing each point (NaN outside the department)."""
     joined = gpd.sjoin(gpd.GeoDataFrame(geometry=points), communes.reset_index()[["insee", "geometry"]], predicate="within")
     return joined.insee.groupby(level=0).first().reindex(points.index)
 

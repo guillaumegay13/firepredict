@@ -18,10 +18,10 @@ import pandas as pd
 from catboost import CatBoostClassifier
 from sklearn.metrics import average_precision_score, roc_auc_score
 
-from firepredict.dataset import MIN_FIRE_HA, PROCESSED_DIR, ROOT, UNRELIABLE_YEARS, load_bdiff
+from firepredict.dataset import MIN_FIRE_HA, PROCESSED_DIR, RESULTS_DIR, UNRELIABLE_YEARS, load_bdiff
 from firepredict.features import weather_state
 
-OUT = ROOT / "results" / "spread.csv"
+OUT = RESULTS_DIR / "spread.csv"
 SIZES_HA = [1, 10]
 SEEDS = [0, 1, 2, 3, 4]
 

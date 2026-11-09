@@ -11,9 +11,12 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
 
+from firepredict.department import SETTINGS
+
 SPLITS = {
-    "train": [*range(2006, 2021), 2022],
-    "val": [2021],  # 2024 has no usable labels
+    # 2024 is in no split where its labels are unusable (Var), else it is a training year.
+    "train": [*range(2006, 2021), 2022, *([2024] if 2024 not in SETTINGS.unreliable_years else [])],
+    "val": [2021],
     "test": [2023],
     "test_2025": [2025],  # extra test, outside the benchmark design
 }

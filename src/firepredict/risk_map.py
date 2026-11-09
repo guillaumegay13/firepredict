@@ -26,13 +26,13 @@ import pandas as pd
 import shapely
 
 from firepredict.communes import load_communes
-from firepredict.dataset import PROCESSED_DIR, ROOT, load_meteo
+from firepredict.dataset import PROCESSED_DIR, RESULTS_DIR, ROOT, load_meteo
 from firepredict.compare_communes import leave_one_year_out, small
 from firepredict.freeze import VERSION, predict
 from firepredict.model_communes import HORIZON, build_panel
 
 TEMPLATE = ROOT / "src" / "firepredict" / "risk_map_template.html"
-OUT = ROOT / "results" / "risk_map.html"
+OUT = RESULTS_DIR / "risk_map.html"
 SPLITS_SHOWN = ["test", "test_2025"]
 WIDTH = 1000  # SVG units
 SIMPLIFY_M = 120

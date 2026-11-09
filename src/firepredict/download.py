@@ -1,30 +1,36 @@
-"""Download raw data for the Var (83) into data/raw/.
+"""Download raw data for the department (FIREPREDICT_DEPARTMENT, default 83) into data/raw/<department>/.
 
 Each source gets its own folder. Every downloaded file is recorded in
-data/raw/manifest.json (URL, download time, size, SHA-256) so that we know
-exactly which data version a result was built from.
+data/raw/<department>/manifest.json (URL, download time, size, SHA-256) so
+that we know exactly which data version a result was built from.
 
 Usage:
     uv run python -m firepredict.download            # all sources
     uv run python -m firepredict.download bdiff      # one source
     uv run python -m firepredict.download --force    # re-download existing files
+    FIREPREDICT_DEPARTMENT=13 uv run python -m firepredict.download   # another department
 """
 
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
 import certifi
+import geopandas as gpd
+import pyogrio
 import requests
 
-RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
+from firepredict.dataset import RAW_DIR
+from firepredict.department import CODE
+
 MANIFEST = RAW_DIR / "manifest.json"
 
-DEPARTMENT = "83"
+DEPARTMENT = CODE
 BDIFF_FIRST_YEAR = 2006
 BDIFF_LAST_YEAR = 2025  # last complete year
 
@@ -93,7 +99,7 @@ def bdiff_ca_bundle() -> str:
 
 
 def download_bdiff(force: bool) -> None:
-    """BDIFF fire records for the Var.
+    """BDIFF fire records for the department.
 
     The site has no API. Its search form stores the filter in a session
     cookie, and /incendies/zip then exports the current selection as a zip
@@ -117,7 +123,7 @@ def download_bdiff(force: bool) -> None:
 
 
 def download_meteo(force: bool) -> None:
-    """Météo-France daily station data, department 83, from 1950 onward.
+    """Météo-France daily station data for the department, from 1950 onward.
 
     Two file families per period: RR-T-Vent (rain, temperature, wind) and
     autres-parametres (humidity, sunshine, etc.). Resource URLs are read from
@@ -142,11 +148,14 @@ def download_meteo_latest(force: bool) -> None:
 
 
 def download_ddtm83_perimeters(force: bool) -> None:
-    """DDTM 83 burned-area perimeters (shapefiles, zipped).
+    """DDTM 83 burned-area perimeters (shapefiles, zipped). Var only.
 
     One dataset covers 1958-2022, then there is one dataset per year.
     Optional in phase 1; used to cross-check BDIFF burned areas.
     """
+    if DEPARTMENT != "83":
+        print("  Var only, skipped")
+        return
     r = requests.get(
         f"{DATA_GOUV_API}/",
         params={"q": "contours feux de forêt Var", "page_size": 100},
@@ -173,8 +182,8 @@ def download_school_holidays(force: bool) -> None:
     """French school holidays per zone, one row per day, 1990-2028.
 
     Listed on data.gouv.fr ("Vacances scolaires par zones"). The official
-    Education ministry API only starts in 2017. The Var (académie de Nice) is
-    in zone B over the whole period.
+    Education ministry API only starts in 2017. Each department's zone is set
+    in department.py.
     """
     url = "https://raw.githubusercontent.com/AntoineAugusti/vacances-scolaires/master/data.csv"
     fetch(url, RAW_DIR / "calendar" / "vacances_scolaires.csv", force, note="Vacances scolaires par zones")
@@ -190,21 +199,26 @@ def download_communes(force: bool) -> None:
 
 
 def download_geography(force: bool) -> None:
-    """Commune boundaries, and Corine Land Cover 2018 for the Var.
+    """Commune boundaries, and Corine Land Cover 2018 for the department.
 
-    Corine: IGN Géoplateforme WFS, polygons in the Var bounding box (Lambert-93),
-    fetched in pages and saved as one GeoJSON.
+    Corine: IGN Géoplateforme WFS, polygons in the bounding box of the
+    department's communes (Lambert-93, widened by 1 km and rounded out to the
+    km), fetched in pages and saved as one GeoJSON.
     """
     download_communes(force)
+    communes = RAW_DIR / "geography" / f"communes_{DEPARTMENT}.geojson"
 
     dest = RAW_DIR / "geography" / f"corine_2018_{DEPARTMENT}.geojson"
     if dest.exists() and not force:
         print(f"  skip (exists) {dest.relative_to(RAW_DIR)}")
         return
+    minx, miny, maxx, maxy = gpd.read_file(communes).to_crs(2154).total_bounds
+    km = 1000
+    bbox = f"{(minx - km) // km * km:.0f},{(miny - km) // km * km:.0f},{-(-(maxx + km) // km) * km:.0f},{-(-(maxy + km) // km) * km:.0f}"
     wfs = (
         "https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature"
         "&TYPENAMES=LANDCOVER.CLC18_FR:clc18_fr&OUTPUTFORMAT=application/json"
-        "&BBOX=915000,6210000,1045000,6315000,urn:ogc:def:crs:EPSG::2154"  # Var, Lambert-93
+        f"&BBOX={bbox},urn:ogc:def:crs:EPSG::2154"  # department, Lambert-93
     )
     features, page = [], 1000
     while True:
@@ -220,27 +234,67 @@ def download_geography(force: bool) -> None:
     record(dest, wfs, note=f"Corine Land Cover 2018, {len(features)} polygons")
 
 
-BDTOPO_EDITION = "BDTOPO_3-5_TOUSTHEMES_GPKG_LAMB93_D083_2026-09-15"
+BDTOPO_FEED = "https://data.geopf.fr/telechargement/resource/BDTOPO"
+BDTOPO_DATE = "2026-09-15"  # same edition for every department when available
+BDTOPO_LAYERS = ["batiment", "troncon_de_route", "zone_de_vegetation"]  # the layers landscape.py reads
+
+
+def bdtopo_edition() -> str:
+    """Name of the BD TOPO edition for the department: BDTOPO_DATE if IGN has
+    it, else the latest one. Read from IGN's download feed (all themes,
+    GeoPackage, Lambert-93)."""
+    r = requests.get(BDTOPO_FEED, params={"zone": f"D{int(DEPARTMENT):03d}", "format": "GPKG"}, timeout=60)
+    r.raise_for_status()
+    editions = sorted(set(re.findall(rf"BDTOPO_[\d-]+_TOUSTHEMES_GPKG_LAMB93_D{int(DEPARTMENT):03d}_[\d-]+", r.text)))
+    dated = [e for e in editions if e.endswith(BDTOPO_DATE)]
+    return dated[0] if dated else max(editions, key=lambda e: e.rsplit("_", 1)[-1])
 
 
 def download_bdtopo(force: bool) -> None:
-    """IGN BD TOPO for the Var (buildings, roads, vegetation), one GeoPackage.
+    """IGN BD TOPO for the department (buildings, roads, vegetation), one GeoPackage.
 
-    Editions are listed at https://data.geopf.fr/telechargement/resource/BDTOPO
-    (filter zone=D083, format=GPKG). The 7z archive is unpacked with bsdtar
-    (libarchive, shipped with macOS) and only the .gpkg is kept.
+    The edition is read from IGN's feed (see bdtopo_edition). The 7z archive
+    is unpacked with bsdtar (libarchive, shipped with macOS); to save disk,
+    only the layers in BDTOPO_LAYERS are copied into a smaller GeoPackage,
+    and the archive and the full GeoPackage are deleted. The manifest keeps
+    the archive's URL, size and SHA-256.
     """
-    url = f"https://data.geopf.fr/telechargement/download/BDTOPO/{BDTOPO_EDITION}/{BDTOPO_EDITION}.7z"
-    archive = RAW_DIR / "bdtopo" / f"{BDTOPO_EDITION}.7z"
-    fetch(url, archive, force, note="IGN BD TOPO, Var, Lambert-93, Licence Ouverte Etalab 2.0")
-    gpkg = archive.with_suffix(".gpkg")
-    if gpkg.exists() and not force:
+    folder = RAW_DIR / "bdtopo"
+    existing = sorted(folder.glob("*.gpkg"))
+    if existing and not force:
+        print(f"  skip (exists) {existing[0].relative_to(RAW_DIR)}")
         return
+    edition = bdtopo_edition()
+    url = f"https://data.geopf.fr/telechargement/download/BDTOPO/{edition}/{edition}.7z"
+    archive = folder / f"{edition}.7z"
+    fetch(url, archive, force, note=f"IGN BD TOPO, department {DEPARTMENT}, Lambert-93, Licence Ouverte Etalab 2.0")
     names = subprocess.run(["bsdtar", "-tf", archive], capture_output=True, text=True, check=True).stdout.split()
     (inner,) = [n for n in names if n.endswith(".gpkg")]
-    with gpkg.open("wb") as out:
+    full = folder / "tmp" / "full.gpkg"  # unpacked archive, deleted below
+    full.parent.mkdir(exist_ok=True)
+    with full.open("wb") as out:
         subprocess.run(["bsdtar", "-xOf", archive, inner], stdout=out, check=True)
-    record(gpkg, url, note=f"extracted from {archive.name}: {inner}")
+    gpkg = archive.with_suffix(".gpkg")
+    keep_layers(full, gpkg)
+    full.unlink()
+    full.parent.rmdir()
+    archive.unlink()
+    record(gpkg, url, note=f"layers {', '.join(BDTOPO_LAYERS)} of {inner}, extracted from {archive.name}")
+    manifest = json.loads(MANIFEST.read_text())
+    manifest[str(archive.relative_to(RAW_DIR))]["note"] += "; deleted after extraction"
+    MANIFEST.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
+
+
+def keep_layers(source: Path, dest: Path) -> None:
+    """Copy BDTOPO_LAYERS, with all their columns, from one GeoPackage to a new one."""
+    tmp = dest.parent / "tmp" / dest.name  # out of landscape.py's sight until complete
+    tmp.parent.mkdir(exist_ok=True)
+    tmp.unlink(missing_ok=True)
+    for layer in BDTOPO_LAYERS:
+        print(f"  copy layer {layer}")
+        table = pyogrio.read_dataframe(source, layer=layer, use_arrow=True)
+        pyogrio.write_dataframe(table, tmp, layer=layer, driver="GPKG", append=tmp.exists())
+    tmp.rename(dest)
 
 
 SOURCES = {

@@ -17,9 +17,10 @@ Evaluation on the test years:
     that fall in the 15 highest-ranked communes (~10%)
 References: commune history alone, and commune history x FWI.
 
-Phase 2 adds the burning period (Var fire-use orders: orange = Feb-Mar,
-red = June-Sept, windy day outside summer) and each commune's 30-day water
-balance (rain - evaporation at its nearest stations), compared as:
+Phase 2 adds the burning period (the prefecture's fire-use orders, dated in
+department.py; Var: orange = Feb-Mar, red = June-Sept; windy day outside
+summer) and each commune's 30-day water balance (rain - evaporation at its
+nearest stations), compared as:
   CatBoost (current inputs) | CatBoost + these inputs | a small logistic model
 
 Usage:
@@ -36,12 +37,13 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from xclim.indicators.atmos import cffwis_indices
 
-from firepredict.dataset import MIN_FIRE_HA, PROCESSED_DIR, ROOT, START, load_bdiff, load_meteo
+from firepredict.dataset import MIN_FIRE_HA, PROCESSED_DIR, RESULTS_DIR, START, load_bdiff, load_meteo
+from firepredict.department import burning_periods
 from firepredict.download import BDIFF_LAST_YEAR
-from firepredict.features import VAR_LATITUDE, calendar
+from firepredict.features import LATITUDE, calendar
 from firepredict.targets import SPLITS, split_of
 
-OUT = ROOT / "results" / "communes_start.csv"
+OUT = RESULTS_DIR / "communes_start.csv"
 HORIZON = 1
 TOP_K = 15
 SEEDS = [0, 1, 2, 3, 4]
@@ -103,7 +105,7 @@ def local_fwi(weather: dict[str, pd.DataFrame]) -> pd.DataFrame:
         pr=grid(weather["rr"], "mm/d"),
         sfcWind=grid(weather["ffm"], "m/s"),
         hurs=grid(weather["un"], "%"),
-        lat=xr.DataArray(VAR_LATITUDE, attrs={"units": "degrees_north"}),
+        lat=xr.DataArray(LATITUDE, attrs={"units": "degrees_north"}),
         season_method=None,
     )
     return pd.DataFrame(fwi.transpose("time", "insee").values, index=weather["tx"].index, columns=weather["tx"].columns)
@@ -152,11 +154,11 @@ def build_panel(forecast: bool = False, min_ha: float = MIN_FIRE_HA) -> pd.DataF
     )
     # Burning period of the target day; wind is only known up to D-1.
     windy = state.ffm_max.shift(1, freq="D").reindex(days).to_numpy() > WINDY_MS
-    red = panel.month.isin([6, 7, 8, 9])
-    panel["orange_period"] = panel.month.isin([2, 3]).astype(int)
-    panel["red_period"] = red.astype(int)
-    panel["windy_off_season"] = (windy & ~red).astype(int)
     target_day = days + pd.Timedelta(days=HORIZON)
+    periods = burning_periods(target_day)
+    panel["orange_period"] = periods.orange_period.to_numpy()
+    panel["red_period"] = periods.red_period.to_numpy()
+    panel["windy_off_season"] = (windy & (panel.red_period == 0)).astype(int)
     panel["split"] = split_of(target_day).to_numpy()
     keep = panel.target.notna() & panel.split.notna()
     if forecast:

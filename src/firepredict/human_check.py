@@ -26,6 +26,7 @@ import pandas as pd
 from sklearn.metrics import roc_auc_score
 
 from firepredict.dataset import MIN_FIRE_HA, PROCESSED_DIR, UNRELIABLE_YEARS, load_bdiff
+from firepredict.department import burning_periods
 from firepredict.features import calendar
 
 FIRST_DAY = "2006-03-01"  # after the FWI spin-up
@@ -110,10 +111,11 @@ def cause_check() -> pd.DataFrame:
 
 
 def burning_period(d: pd.DataFrame) -> pd.Series:
+    rules = burning_periods(d.index)
     period = pd.Series("green", index=d.index)
-    period[d.month.isin([2, 3])] = "orange"
+    period[rules.orange_period == 1] = "orange"
     period[d.ffm_max > WINDY_MS] = "red (wind)"
-    period[d.month.isin([6, 7, 8, 9])] = "red (season)"
+    period[rules.red_period == 1] = "red (season)"
     return period
 
 

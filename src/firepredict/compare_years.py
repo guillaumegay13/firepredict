@@ -32,12 +32,13 @@ from sklearn.metrics import roc_auc_score
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
-from firepredict.dataset import PROCESSED_DIR, ROOT
+from firepredict.dataset import PROCESSED_DIR, RESULTS_DIR
+from firepredict.department import burning_periods
 from firepredict.features import drought_state, make_xy
 from firepredict.human_check import WINDY_MS
 from firepredict.targets import SPLITS
 
-OUT = ROOT / "results" / "compare_years.csv"
+OUT = RESULTS_DIR / "compare_years.csv"
 FIRST_DAY = "2006-04-01"  # 90-day dryness windows need 3 months of history
 SEEDS = [0, 1, 2, 3, 4]
 # Raw values only: anomalies need a "normal" computed without the hidden year.
@@ -61,9 +62,8 @@ def data() -> tuple[pd.DataFrame, pd.Series]:
     state = state.join(drought_state(daily, SPLITS["train"])[DRYNESS])
     X, y = make_xy(state, daily, horizon=1, setting="operational")
     X = X.assign(log_fwi=np.log1p(X.fwi), weekend=X.day_of_week.ge(5).astype(int))
-    red = X.month.isin([6, 7, 8, 9])
-    X = X.assign(orange_period=X.month.isin([2, 3]).astype(int), red_period=red.astype(int),
-                 windy_off_season=(X.ffm_max.gt(WINDY_MS) & ~red).astype(int))  # fmt: skip
+    rules = burning_periods(X.index + pd.Timedelta(days=1)).set_axis(X.index)  # of the target day
+    X = X.join(rules).assign(windy_off_season=(X.ffm_max.gt(WINDY_MS) & rules.red_period.eq(0)).astype(int))
     keep = X.index >= FIRST_DAY
     return X[keep], (y.fire_count[keep] > 0).astype(int)
 

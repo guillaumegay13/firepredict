@@ -1,0 +1,71 @@
+tests/test_department.py
+  s_7d92950cd45a5d::t_c21785694f79b6 1-37
+src/firepredict/department.py
+  s_7d92950cd45a5d::t_de2a23f7daa538 1-112
+  s_7d92950cd45a5d::t_619bb288d1e8d4 113-115
+src/firepredict/model_catboost_classes.py
+  s_7d92950cd45a5d::t_edd4562f24d46c 91
+  s_7d92950cd45a5d::t_fefa7233d524f1 22,27
+src/firepredict/audit.py
+  s_7d92950cd45a5d::t_41dd2001b432b6 1,17-18,20,115,126,129-131
+src/firepredict/baseline_fwi.py
+  s_7d92950cd45a5d::t_44cdd7b79a306c 19,24
+src/firepredict/calibration.py
+  s_7d92950cd45a5d::t_8ebb4c086ad7a9 31,33,35-36,62
+src/firepredict/communes.py
+  s_7d92950cd45a5d::t_1a83f8338c1a9d 1,3,22,37,45,67
+src/firepredict/compare_communes.py
+  s_7d92950cd45a5d::t_74b417decb77aa 4-6,34,37,149-150
+src/firepredict/compare_years.py
+  s_7d92950cd45a5d::t_b451fb26aa104c 35-36,41,65-66
+src/firepredict/dataset.py
+  s_7d92950cd45a5d::t_d0c408de6fc64a 1,3,5,32-33,35-37,41,109
+src/firepredict/download.py
+  s_7d92950cd45a5d::t_25cde4684abcc3 1,4-5,11,17,24-25,28-30,33,102,126,151,156-158,185-186,193,196-198,204-205,211-213,217,233-246,250,252-256,258-261,263-266,269-271,273-293
+src/firepredict/drought_check.py
+  s_7d92950cd45a5d::t_60e534adc7ad59 16,20
+src/firepredict/features.py
+  s_7d92950cd45a5d::t_3d0c66c191685f 7,27,30,57,78,158
+src/firepredict/freeze.py
+  s_7d92950cd45a5d::t_d97a36af5f63db 41,46,68-69,84-85,111
+src/firepredict/human_check.py
+  s_7d92950cd45a5d::t_856c9e622461b0 29,114,116,118
+src/firepredict/landscape.py
+  s_7d92950cd45a5d::t_b9f2629a39322a 49
+src/firepredict/model_catboost.py
+  s_7d92950cd45a5d::t_1e13632bf2aba5 23,28
+src/firepredict/model_communes.py
+  s_7d92950cd45a5d::t_239ffb4a5e9c0a 20-23,40-41,43,46,108,158-161
+src/firepredict/model_small.py
+  s_7d92950cd45a5d::t_26b2f382f72bf0 26,30
+src/firepredict/model_spread.py
+  s_7d92950cd45a5d::t_2d6e99ae8b1e1c 21,24
+src/firepredict/model_timestral.py
+  s_7d92950cd45a5d::t_fdf783b8625f1d 24,29
+src/firepredict/pipeline.py
+  s_7d92950cd45a5d::t_8771ab940013f5 12-15,21,25,83,85-86,88-89
+src/firepredict/risk_map.py
+  s_7d92950cd45a5d::t_b363559fc6313a 29,35
+src/firepredict/robustness.py
+  s_7d92950cd45a5d::t_19e2905ff9a3f4 18,21
+src/firepredict/targets.py
+  s_7d92950cd45a5d::t_45e7b70fd3a6dd 14-15,17-19
+src/firepredict/value_check.py
+  s_7d92950cd45a5d::t_f771482f93c99d 5-6,31-32,35,39-40,60,65-70,80,92-93,96,99,101-104,106-107,109-110
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8d1e99682622497441664a6102ebafb268c77123",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

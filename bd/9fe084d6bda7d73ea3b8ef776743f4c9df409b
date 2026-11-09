@@ -1,0 +1,23 @@
+models/small_commune_v2/forecasts_2026.csv
+  s_df17c2731cbf68::t_c4403ec3d95867 1-47890
+models/small_commune_v2/metadata.json
+  s_df17c2731cbf68::t_751de2aeb474d2 1-153
+models/small_commune_v2/usual_rates.csv
+  s_df17c2731cbf68::t_3061cf2372e962 1-154
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bd9fe084d6bda7d73ea3b8ef776743f4c9df409b",
+  "prompts": {},
+  "sessions": {
+    "s_df17c2731cbf68": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aaf75ffb-1f05-4901-8b25-3d20b3045952",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

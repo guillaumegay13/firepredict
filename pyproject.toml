@@ -1,7 +1,7 @@
 [project]
 name = "firepredict"
 version = "0.1.0"
-description = "Daily wildfire-start risk by commune for the Var (83), France, from open data"
+description = "Daily wildfire-start risk by commune for the Var (83) and Bouches-du-Rhône (13), France, from open data"
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]

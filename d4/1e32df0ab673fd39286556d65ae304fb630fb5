@@ -1,0 +1,38 @@
+src/firepredict/compare_years.py
+  s_7d92950cd45a5d::t_20b9e7575f58cd 29,97-99
+src/firepredict/model_communes.py
+  s_7d92950cd45a5d::t_d05844dc9f1d3e 50,59
+  s_7d92950cd45a5d::t_a023fe5b377605 62,66,126,133
+  s_7d92950cd45a5d::t_429bcf15e9531f 8,10-11
+src/firepredict/landscape.py
+  s_7d92950cd45a5d::t_ed975d1f9c4fcd 85-89
+  s_7d92950cd45a5d::t_efa6269658d310 90-91
+src/firepredict/value_check.py
+  s_7d92950cd45a5d::t_f8b9b22e1b1950 11-20,36,48-54,81-82,98-103
+src/firepredict/features.py
+  s_7d92950cd45a5d::t_d05844dc9f1d3e 4-6,147
+tests/test_features.py
+  s_7d92950cd45a5d::t_d05844dc9f1d3e 88-96
+src/firepredict/compare_communes.py
+  s_7d92950cd45a5d::t_36c8a59decb359 35,82-100,135
+src/firepredict/robustness.py
+  s_7d92950cd45a5d::t_a023fe5b377605 1-48
+src/firepredict/calibration.py
+  s_7d92950cd45a5d::t_f8b9b22e1b1950 72-73,77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d41e32df0ab673fd39286556d65ae304fb630fb5",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

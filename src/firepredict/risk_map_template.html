@@ -1,0 +1,186 @@
+<meta charset="utf-8">
+<title>Var Fire-Start Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+/* Layout: the map fills the screen; one small panel (date + legend) on the side, below on phones. */
+:root {
+  --bg: #eef0ef; --surface: #f8f9f8; --ink: #1d2422; --muted: #5b6561; --line: #c9cfcc; --edge: #ffffff; --focus: #1f6f8b;
+  --r0: #f3e9c6; --r1: #f2c36b; --r2: #e8873a; --r3: #c9452a; --r4: #7d1d24;
+  --body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #151a19; --surface: #1d2423; --ink: #e6ebe9; --muted: #9aa5a1; --line: #34403d; --edge: #151a19; --focus: #6cc3df;
+    --r0: #4a4433; --r1: #9c7a33; --r2: #d0742f; --r3: #ef5a3c; --r4: #ffb1a0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #151a19; --surface: #1d2423; --ink: #e6ebe9; --muted: #9aa5a1; --line: #34403d; --edge: #151a19; --focus: #6cc3df;
+  --r0: #4a4433; --r1: #9c7a33; --r2: #d0742f; --r3: #ef5a3c; --r4: #ffb1a0;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 14px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 16px;
+}
+.app { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: 16px; }
+@media (max-width: 700px) { .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; height: auto; } }
+.map { position: relative; min-width: 0; }
+svg { display: block; width: 100%; height: 100%; max-height: calc(100vh - 32px); }
+svg path { stroke: var(--edge); stroke-width: 0.8; transition: fill .2s; cursor: pointer; }
+svg path.sel { stroke: var(--ink); stroke-width: 2.5; }
+.pop { position: absolute; z-index: 2; width: 250px; max-width: calc(100% - 8px); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 24px rgb(0 0 0 / .18); padding: 12px 14px; display: grid; gap: 10px; }
+.pop h2 { margin: 0; font-size: 1.05rem; font-weight: 600; padding-right: 24px; }
+.pop .x { position: absolute; top: 8px; right: 8px; border: 0; background: transparent; font-size: 1.1rem; line-height: 1; padding: 2px 6px; }
+.pop dl { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; }
+.pop dt { color: var(--muted); }
+.pop dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.pop .h { grid-column: 1 / -1; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; padding-top: 4px; }
+.pop .big { font-size: 1.5rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.pop .fire { color: var(--r3); font-weight: 600; }
+svg circle { fill: var(--ink); stroke: var(--edge); stroke-width: 1.5; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { svg path { transition: none; } }
+aside { align-self: center; display: grid; gap: 14px; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.day { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 6px; }
+.day input { width: 100%; min-width: 0; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; }
+button { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 9px; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.legend { display: grid; gap: 5px; }
+.legend div { display: flex; align-items: center; gap: 8px; }
+.sw { width: 16px; height: 12px; border-radius: 2px; flex: none; }
+.version { color: var(--muted); font-size: 0.75rem; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ink); margin: 0 3px; flex: none; }
+</style>
+
+<div class="app">
+  <div class="map" id="map">
+    <svg id="svg" role="img" aria-label="Var communes coloured by chance of a fire start"></svg>
+    <div class="pop" id="pop" hidden></div>
+  </div>
+  <aside>
+    <div class="day">
+      <button id="prev" aria-label="Previous day">‹</button>
+      <input type="date" id="date" aria-label="Day">
+      <button id="next" aria-label="Next day">›</button>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="version" id="version"></div>
+  </aside>
+</div>
+
+<script>
+const DATA = __DATA__;
+const NS = "http://www.w3.org/2000/svg";
+const CUTS = [3, 10, 30, 100];  // chance in 1/10,000
+const LABELS = ["< 0.03%", "0.03–0.1%", "0.1–0.3%", "0.3–1%", "≥ 1%"];
+const VARS = ["--r0", "--r1", "--r2", "--r3", "--r4"];
+const $ = id => document.getElementById(id);
+
+const svg = $("svg");
+svg.setAttribute("viewBox", `0 0 ${DATA.width} ${DATA.height}`);
+let pos = DATA.days.length - 1;  // latest forecast
+let selected = null, anchor = null;  // clicked commune and click point (px in .map)
+
+const paths = DATA.communes.map((c, i) => {
+  const p = document.createElementNS(NS, "path");
+  p.setAttribute("d", c.d);
+  const t = document.createElementNS(NS, "title"); p.append(t);
+  p.addEventListener("click", e => {
+    const box = $("map").getBoundingClientRect();
+    selected = i; anchor = [e.clientX - box.left, e.clientY - box.top];
+    render();
+  });
+  svg.append(p);
+  return p;
+});
+const dots = document.createElementNS(NS, "g"); svg.append(dots);
+$("version").textContent = `Forecasts: ${DATA.model}`;
+$("date").min = DATA.days[0].date; $("date").max = DATA.days.at(-1).date;
+
+const W = DATA.weather, wIndex = Object.fromEntries(W.dates.map((d, i) => [d, i]));
+const shortDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" });
+const fmt = (v, unit, k = 1) => (v === null || v === undefined ? "–" : `${(v * k).toFixed(unit === "%" || unit === " km/h" ? 0 : 1)}${unit}`);
+
+// Weather of the day if observed, else the latest observed day before it.
+function observed(date, station) {
+  for (let i = wIndex[date]; i >= 0; i--) if (W.stations[station].TX[i] !== null) return i;
+  return null;
+}
+
+function popup(day) {
+  const c = DATA.communes[selected], p = day.p[selected];
+  const rank = day.p.filter(v => v > p).length + 1;
+  const recorded = day.fires !== null, fire = recorded && day.fires.includes(selected);
+  const i = observed(day.date, c.st.TX), w = v => (i === null ? null : W.stations[c.st[v]][v][i]);
+  const wDate = i === null ? "" : shortDate.format(new Date(W.dates[i] + "T12:00:00"));
+  const latest = i !== null && W.dates[i] !== day.date;
+  $("pop").innerHTML = `
+    <button class="x" id="close" aria-label="Close">×</button>
+    <h2>${c.name}</h2>
+    <dl>
+      <dt>Chance of a fire start</dt><dd class="big">${(p / 100).toFixed(2)}%</dd>
+      <dt>Rank in the Var</dt><dd>${rank} / ${DATA.communes.length}</dd>
+      <dt>Fire that day</dt><dd>${!recorded ? "not recorded yet" : fire ? '<span class="fire">yes</span>' : "no"}</dd>
+      <div class="h">Weather · ${wDate}${latest ? " (latest)" : ""}</div>
+      <dt>Max temperature</dt><dd>${fmt(w("TX"), " °C")}</dd>
+      <dt>Rain</dt><dd>${fmt(w("RR"), " mm")}</dd>
+      <dt>Mean wind</dt><dd>${fmt(w("FFM"), " km/h", 3.6)}</dd>
+      <dt>Min humidity</dt><dd>${fmt(w("UN"), "%")}</dd>
+      <dt>Var FWI</dt><dd>${fmt(i === null ? null : W.fwi[i], "")}</dd>
+      <dt>Var max gust</dt><dd>${fmt(i === null ? null : W.gust[i], " km/h", 3.6)}</dd>
+      <dt>Days since rain</dt><dd>${i === null || W.dry_days[i] === null ? "–" : W.dry_days[i]}</dd>
+      <div class="h">Commune</div>
+      <dt>Population</dt><dd>${c.pop.toLocaleString("en-GB")}</dd>
+      <dt>Area</dt><dd>${c.km2} km²</dd>
+      <dt>Past fires per year</dt><dd>${c.fires_yr.toFixed(1)}</dd>
+    </dl>`;
+  $("close").onclick = () => { selected = null; render(); };
+  const pop = $("pop"), box = $("map").getBoundingClientRect();
+  pop.hidden = false;
+  const x = Math.min(Math.max(anchor[0] + 12, 4), box.width - pop.offsetWidth - 4);
+  const y = Math.min(Math.max(anchor[1] - pop.offsetHeight / 2, 4), Math.max(4, box.height - pop.offsetHeight - 4));
+  pop.style.left = `${Math.max(4, x)}px`; pop.style.top = `${y}px`;
+}
+
+function render() {
+  const day = DATA.days[pos], cs = getComputedStyle(document.documentElement);
+  const fills = VARS.map(v => cs.getPropertyValue(v));
+  $("date").value = day.date;
+  paths.forEach((p, c) => {
+    p.style.fill = fills[CUTS.filter(x => day.p[c] >= x).length];
+    p.firstChild.textContent = `${DATA.communes[c].name}: ${(day.p[c] / 100).toFixed(2)}%`;
+    p.classList.toggle("sel", c === selected);
+  });
+  if (selected === null) $("pop").hidden = true; else popup(day);
+  dots.replaceChildren(...(day.fires || []).map(c => {
+    const e = document.createElementNS(NS, "circle");
+    e.setAttribute("cx", DATA.communes[c].x); e.setAttribute("cy", DATA.communes[c].y); e.setAttribute("r", 7);
+    return e;
+  }));
+  $("legend").innerHTML = LABELS.map((l, i) => `<div><span class="sw" style="background:${fills[i]}"></span>${l}</div>`).join("")
+    + '<div><span class="dot"></span>fire</div>';
+}
+
+$("prev").onclick = () => { pos = Math.max(0, pos - 1); render(); };
+$("next").onclick = () => { pos = Math.min(DATA.days.length - 1, pos + 1); render(); };
+$("date").onchange = e => {
+  const i = DATA.days.findIndex(d => d.date >= e.target.value);
+  if (i >= 0) pos = i;
+  render();
+};
+svg.addEventListener("click", e => { if (e.target === svg) { selected = null; render(); } });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && selected !== null) { selected = null; render(); return; }
+  if (e.target.tagName === "INPUT") return;
+  if (e.key === "ArrowLeft") $("prev").click();
+  if (e.key === "ArrowRight") $("next").click();
+});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+render();
+</script>

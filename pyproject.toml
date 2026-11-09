@@ -1,0 +1,45 @@
+[project]
+name = "firepredict"
+version = "0.1.0"
+description = "Daily wildfire-start risk by commune for the Var (83), France, from open data"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Guillaume Gay", email = "guillaume.gay@protonmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "catboost>=1.2.10",
+    "certifi>=2026.10.23",
+    "geopandas>=1.2.0",
+    "holidays>=0.107",
+    "matplotlib>=3.11.2",
+    "pandas>=3.1.0",
+    "pyarrow>=26.0.0",
+    "pymc>=6.3.2",
+    "pyogrio>=0.13.0",
+    "requests>=2.34.2",
+    "scikit-learn>=1.9.1",
+    "tabulate>=0.10.0",
+    "xclim>=0.62.0",
+]
+
+[project.optional-dependencies]
+# Zero-shot Timestral comparison (pulls in PyTorch); not needed for the main model.
+timestral = ["timestral"]
+
+[project.urls]
+Repository = "https://github.com/guillaumegay13/firepredict"
+
+[build-system]
+requires = ["uv_build>=0.10.2,<0.11.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
+
+[tool.uv.sources]
+timestral = { git = "https://github.com/mistralai/timestral.git" }

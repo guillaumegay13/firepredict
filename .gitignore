@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.pyc
+
+# Raw and processed data are downloaded or built, never committed
+data/
+
+# Local credentials
+.env
+
+# Generated superpowers docs (plans, specs)
+docs/superpowers/
+
+# Generated results
+results/
+
+# CatBoost training logs
+catboost_info/

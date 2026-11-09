@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<title>Var Fire-Start Map</title>
+<title>Risque de départ de feu</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&display=swap">
@@ -62,19 +62,19 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--focus); out
 
 <div class="app">
   <div class="map" id="map">
-    <svg id="svg" role="img" aria-label="Var communes coloured by chance of a fire start"></svg>
+    <svg id="svg" role="img" aria-label="Communes colorées selon le risque de départ de feu"></svg>
     <div class="pop" id="pop" hidden></div>
   </div>
   <aside>
     <div class="day">
-      <button id="prev" aria-label="Previous day">‹</button>
-      <input type="date" id="date" aria-label="Day">
-      <button id="next" aria-label="Next day">›</button>
+      <button id="prev" aria-label="Jour précédent">‹</button>
+      <input type="date" id="date" aria-label="Jour">
+      <button id="next" aria-label="Jour suivant">›</button>
     </div>
     <div class="legend" id="legend"></div>
-    <select id="department" aria-label="Department"></select>
+    <select id="department" aria-label="Département"></select>
     <div class="version" id="version"></div>
-    <div class="version">Research preview, not an official warning. Fire records: BDIFF, bdiff.agriculture.gouv.fr, droits de reproduction réservés et strictement limités. Weather: Météo-France. <a href="https://github.com/guillaumegay13/firepredict">About</a></div>
+    <div class="version">Outil de recherche, pas une alerte officielle. Feux : BDIFF, bdiff.agriculture.gouv.fr, droits de reproduction réservés et strictement limités. Météo : Météo-France. <a href="https://github.com/guillaumegay13/firepredict">En savoir plus</a></div>
   </aside>
 </div>
 
@@ -82,7 +82,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--focus); out
 const DATA = __DATA__;
 const NS = "http://www.w3.org/2000/svg";
 const CUTS = [3, 10, 30, 100];  // chance in 1/10,000
-const LABELS = ["< 0.03%", "0.03–0.1%", "0.1–0.3%", "0.3–1%", "≥ 1%"];
+const LABELS = ["< 0,03 %", "0,03–0,1 %", "0,1–0,3 %", "0,3–1 %", "≥ 1 %"];
 const VARS = ["--r0", "--r1", "--r2", "--r3", "--r4"];
 const $ = id => document.getElementById(id);
 
@@ -104,14 +104,17 @@ const paths = DATA.communes.map((c, i) => {
   return p;
 });
 const dots = document.createElementNS(NS, "g"); svg.append(dots);
-$("version").textContent = `Forecasts: ${DATA.model}`;
+document.documentElement.lang = "fr";
+const pct = v => `${(v / 100).toFixed(2).replace(".", ",")} %`;  // chance stored in 1/10,000
+const DEPT_NAME = DATA.departments.find(d => d.code === DATA.department).name;
+$("version").textContent = `Prévisions : ${DATA.model === "none (past years only)" ? "aucune (années passées seulement)" : DATA.model}`;
 DATA.departments.forEach(d => $("department").add(new Option(`${d.name} (${d.code})`, d.href, false, d.code === DATA.department)));
 $("department").onchange = e => { location.href = e.target.value; };
 $("date").min = DATA.days[0].date; $("date").max = DATA.days.at(-1).date;
 
 const W = DATA.weather, wIndex = Object.fromEntries(W.dates.map((d, i) => [d, i]));
-const shortDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" });
-const fmt = (v, unit, k = 1) => (v === null || v === undefined ? "–" : `${(v * k).toFixed(unit === "%" || unit === " km/h" ? 0 : 1)}${unit}`);
+const shortDate = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+const fmt = (v, unit, k = 1) => (v === null || v === undefined ? "–" : `${(v * k).toFixed(unit === " %" || unit === " km/h" ? 0 : 1).replace(".", ",")}${unit}`);
 
 // Weather of the day if observed, else the latest observed day before it.
 function observed(date, station) {
@@ -127,24 +130,24 @@ function popup(day) {
   const wDate = i === null ? "" : shortDate.format(new Date(W.dates[i] + "T12:00:00"));
   const latest = i !== null && W.dates[i] !== day.date;
   $("pop").innerHTML = `
-    <button class="x" id="close" aria-label="Close">×</button>
+    <button class="x" id="close" aria-label="Fermer">×</button>
     <h2>${c.name}</h2>
     <dl>
-      <dt>Chance of a fire start</dt><dd class="big">${(p / 100).toFixed(2)}%</dd>
-      <dt>Rank in the Var</dt><dd>${rank} / ${DATA.communes.length}</dd>
-      <dt>Fire that day</dt><dd>${!recorded ? "not recorded yet" : fire ? '<span class="fire">yes</span>' : "no"}</dd>
-      <div class="h">Weather · ${wDate}${latest ? " (latest)" : ""}</div>
-      <dt>Max temperature</dt><dd>${fmt(w("TX"), " °C")}</dd>
-      <dt>Rain</dt><dd>${fmt(w("RR"), " mm")}</dd>
-      <dt>Mean wind</dt><dd>${fmt(w("FFM"), " km/h", 3.6)}</dd>
-      <dt>Min humidity</dt><dd>${fmt(w("UN"), "%")}</dd>
-      <dt>Var FWI</dt><dd>${fmt(i === null ? null : W.fwi[i], "")}</dd>
-      <dt>Var max gust</dt><dd>${fmt(i === null ? null : W.gust[i], " km/h", 3.6)}</dd>
-      <dt>Days since rain</dt><dd>${i === null || W.dry_days[i] === null ? "–" : W.dry_days[i]}</dd>
+      <dt>Risque de départ de feu</dt><dd class="big">${pct(p)}</dd>
+      <dt>Rang (${DEPT_NAME})</dt><dd>${rank} / ${DATA.communes.length}</dd>
+      <dt>Feu ce jour-là</dt><dd>${!recorded ? "pas encore publié" : fire ? '<span class="fire">oui</span>' : "non"}</dd>
+      <div class="h">Météo · ${wDate}${latest ? " (dernière connue)" : ""}</div>
+      <dt>Température max.</dt><dd>${fmt(w("TX"), " °C")}</dd>
+      <dt>Pluie</dt><dd>${fmt(w("RR"), " mm")}</dd>
+      <dt>Vent moyen</dt><dd>${fmt(w("FFM"), " km/h", 3.6)}</dd>
+      <dt>Humidité min.</dt><dd>${fmt(w("UN"), " %")}</dd>
+      <dt>IFM du département</dt><dd>${fmt(i === null ? null : W.fwi[i], "")}</dd>
+      <dt>Rafale max. (département)</dt><dd>${fmt(i === null ? null : W.gust[i], " km/h", 3.6)}</dd>
+      <dt>Jours sans pluie</dt><dd>${i === null || W.dry_days[i] === null ? "–" : W.dry_days[i]}</dd>
       <div class="h">Commune</div>
-      <dt>Population</dt><dd>${c.pop.toLocaleString("en-GB")}</dd>
-      <dt>Area</dt><dd>${c.km2} km²</dd>
-      <dt>Past fires per year</dt><dd>${c.fires_yr.toFixed(1)}</dd>
+      <dt>Population</dt><dd>${c.pop.toLocaleString("fr-FR")}</dd>
+      <dt>Superficie</dt><dd>${String(c.km2).replace(".", ",")} km²</dd>
+      <dt>Feux par an (passé)</dt><dd>${c.fires_yr.toFixed(1).replace(".", ",")}</dd>
     </dl>`;
   $("close").onclick = () => { selected = null; render(); };
   const pop = $("pop"), box = $("map").getBoundingClientRect();
@@ -160,7 +163,7 @@ function render() {
   $("date").value = day.date;
   paths.forEach((p, c) => {
     p.style.fill = fills[CUTS.filter(x => day.p[c] >= x).length];
-    p.firstChild.textContent = `${DATA.communes[c].name}: ${(day.p[c] / 100).toFixed(2)}%`;
+    p.firstChild.textContent = `${DATA.communes[c].name} : ${pct(day.p[c])}`;
     p.classList.toggle("sel", c === selected);
   });
   if (selected === null) $("pop").hidden = true; else popup(day);
@@ -170,7 +173,7 @@ function render() {
     return e;
   }));
   $("legend").innerHTML = LABELS.map((l, i) => `<div><span class="sw" style="background:${fills[i]}"></span>${l}</div>`).join("")
-    + '<div><span class="dot"></span>fire</div>';
+    + '<div><span class="dot"></span>départ de feu</div>';
 }
 
 $("prev").onclick = () => { pos = Math.max(0, pos - 1); render(); };

@@ -1,0 +1,31 @@
+src/firepredict/pipeline.py
+  s_7d92950cd45a5d::t_575cf4929081dc 1-86
+pyproject.toml
+  s_7d92950cd45a5d::t_246c272acabd5e 4-7,28-33
+  s_7d92950cd45a5d::t_ffe27a6f293455 34
+README.md
+  s_7d92950cd45a5d::t_bb44ea0387ecbc 15,90
+  s_7d92950cd45a5d::t_7d5fbebb2b7d56 1-14,16-89,91-118
+LICENSE
+  s_7d92950cd45a5d::t_5cd132af628251 1-21
+.github/workflows/tests.yml
+  s_7d92950cd45a5d::t_bb44ea0387ecbc 1-18
+uv.lock
+  s_7d92950cd45a5d::t_241b583b3e7c7f 609-613,633,636
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5aad833f3b7670b54cb1a613c1b551ecd7f4b71c",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

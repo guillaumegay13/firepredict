@@ -1,0 +1,79 @@
+.github/workflows/daily.yml
+  s_7d92950cd45a5d::t_65855c62594b9c 32,47
+README.md
+  s_7d92950cd45a5d::t_1e793ee0acc73b 9,77,95-108,112,117,119,123,129,137
+reports/bouches_du_rhone_and_transfer.md
+  s_7d92950cd45a5d::t_f21b6df6e52cea 1-195
+src/firepredict/audit.py
+  s_7d92950cd45a5d::t_564ebf8b1824dc 1,17-18,20,115,126,129-131
+src/firepredict/baseline_fwi.py
+  s_7d92950cd45a5d::t_ebf905326f758e 19,24
+src/firepredict/calibration.py
+  s_7d92950cd45a5d::t_f6f339961683d5 31,33,35-36,62,90,94,104
+src/firepredict/communes.py
+  s_7d92950cd45a5d::t_374da1d79d8e95 1,3,22,37,45,67
+src/firepredict/compare_communes.py
+  s_7d92950cd45a5d::t_159237eff3101c 4-6,34,37,149-150
+src/firepredict/compare_years.py
+  s_7d92950cd45a5d::t_040205d31a5b6b 35-36,41,65-66
+src/firepredict/dataset.py
+  s_7d92950cd45a5d::t_f1f476ec8d72b4 1,3,5,32-33,35-37,41,109
+src/firepredict/department.py
+  s_7d92950cd45a5d::t_e9afa62b9061ae 1-115
+src/firepredict/download.py
+  s_7d92950cd45a5d::t_7a9085a6196245 1,4-5,11,17,24-25,28-30,33,102,126,151,156-158,185-186,202,204-206,209,215-217,221,237-250,254,256-260,262-265,267-270,273-275,277-297
+src/firepredict/drought_check.py
+  s_7d92950cd45a5d::t_8ef6ff84310dcd 16,20
+src/firepredict/features.py
+  s_7d92950cd45a5d::t_115aaa2f936126 7,27,30,57,78,158
+src/firepredict/freeze.py
+  s_7d92950cd45a5d::t_d50b8fac458512 41,46,68-69,84-85,111
+src/firepredict/human_check.py
+  s_7d92950cd45a5d::t_598d5f83cc066a 29,114,116,118
+src/firepredict/landscape.py
+  s_7d92950cd45a5d::t_a2b2cb363ebfb7 49
+src/firepredict/model_catboost.py
+  s_7d92950cd45a5d::t_df512bd4eb60a3 23,28
+src/firepredict/model_catboost_classes.py
+  s_7d92950cd45a5d::t_b4b36feaf5dcd3 22,27,91
+src/firepredict/model_communes.py
+  s_7d92950cd45a5d::t_85d337192c385c 20-23,40-41,43,46,108,158-161
+src/firepredict/model_small.py
+  s_7d92950cd45a5d::t_c3ab1d57c89770 26,30
+src/firepredict/model_spread.py
+  s_7d92950cd45a5d::t_fc08e14512df97 21,24
+src/firepredict/model_timestral.py
+  s_7d92950cd45a5d::t_ec2db42f6526c1 24,29
+src/firepredict/pipeline.py
+  s_7d92950cd45a5d::t_b9dc913d938e3b 12-15,21,25,83,85-86,88-89
+src/firepredict/risk_map.py
+  s_7d92950cd45a5d::t_9371e8d69c7eec 29,35
+src/firepredict/robustness.py
+  s_7d92950cd45a5d::t_2c7467dc68e3fc 18,21
+src/firepredict/targets.py
+  s_7d92950cd45a5d::t_b2c0fa186b628d 14-15,17-19
+src/firepredict/transfer.py
+  s_7d92950cd45a5d::t_5e138cb327ef04 1-175
+src/firepredict/value_check.py
+  s_7d92950cd45a5d::t_c08d31de594ada 5-6,31-32,35,39-40,60,65-70,80,92-93,96,99,101-104,106-107,109-110
+static/README.md
+  s_7d92950cd45a5d::t_98528024f94ae4 4
+tests/test_department.py
+  s_7d92950cd45a5d::t_3390ac7a1e9211 1-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7347899535c92a02750569ba6771156cdf314155",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

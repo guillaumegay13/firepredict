@@ -69,6 +69,7 @@ Usage:
     uv run python -m firepredict.model_v4 rejudge      # second protocol from saved predictions
     uv run python -m firepredict.model_v4 freeze       # models/small_commune_v4 (F)
     uv run python -m firepredict.model_v4 forecast     # archive forecasts/v4/<department>/<day>.csv
+    uv run python -m firepredict.model_v4 value        # v4 vs FWI references, fires caught
 """
 
 import json
@@ -397,6 +398,29 @@ def past_predictions(code: str) -> pd.Series:
     return scores[code][FROZEN]
 
 
+def value() -> pd.DataFrame:
+    """v4 (F, every-year test) against the FWI references on the same commune-days:
+    ranking by year, positive commune-days caught at pooled budgets and at daily
+    capacities, with 95% ranges from resampling years (value_check.gains)."""
+    from firepredict.transfer import usual_rates
+    from firepredict.value_check import gains
+
+    rows = []
+    for code, panel in labelled_panels().items():
+        year = target_day(panel).year
+        history = pd.Series(np.nan, index=panel.index)
+        for hidden in np.unique(year):  # usual yearly rate without the hidden year (as v2's reference)
+            rows_h = year == hidden
+            history[rows_h] = usual_rates(panel, hidden)[rows_h]
+        scores = {"FWI alone (department)": panel.fwi, "local FWI alone": panel.local_fwi,
+                  "history x FWI": history * panel.fwi, "v4": past_predictions(code).reindex(panel.index)}  # fmt: skip
+        references = [k for k in scores if k != "v4"]
+        rows.append(gains(panel, scores, model="v4", references=references).assign(department=code))
+    table = pd.concat(rows)
+    table.to_csv(OUT_DIR / "value.csv")
+    return table
+
+
 def forecast() -> None:
     """Archive today's v4 forecast for every department (never overwritten)."""
     for code, panel in build_panels().items():
@@ -600,6 +624,10 @@ if __name__ == "__main__":
         print(json.dumps({k: m[k] for k in ["version", "frozen_at", "status", "weights_standardised", "forecasts_2026"]}, indent=2, ensure_ascii=False))
     elif command == "forecast":
         forecast()
+    elif command == "value":
+        pd.set_option("display.width", 250)
+        pd.set_option("display.max_colwidth", 40)
+        print(value().T.to_string())
     elif command == "rejudge":
         j = rejudge()
         for rule in ["rule 3", "rule 4"]:

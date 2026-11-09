@@ -55,6 +55,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--focus); out
 .legend div { display: flex; align-items: center; gap: 8px; }
 .sw { width: 16px; height: 12px; border-radius: 2px; flex: none; }
 .version { color: var(--muted); font-size: 0.75rem; }
+#department { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; }
 .version a { color: inherit; }
 .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ink); margin: 0 3px; flex: none; }
 </style>
@@ -71,6 +72,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--focus); out
       <button id="next" aria-label="Next day">›</button>
     </div>
     <div class="legend" id="legend"></div>
+    <select id="department" aria-label="Department"></select>
     <div class="version" id="version"></div>
     <div class="version">Research preview, not an official warning. Fire records: BDIFF, bdiff.agriculture.gouv.fr, droits de reproduction réservés et strictement limités. Weather: Météo-France. <a href="https://github.com/guillaumegay13/firepredict">About</a></div>
   </aside>
@@ -103,6 +105,8 @@ const paths = DATA.communes.map((c, i) => {
 });
 const dots = document.createElementNS(NS, "g"); svg.append(dots);
 $("version").textContent = `Forecasts: ${DATA.model}`;
+DATA.departments.forEach(d => $("department").add(new Option(`${d.name} (${d.code})`, d.href, false, d.code === DATA.department)));
+$("department").onchange = e => { location.href = e.target.value; };
 $("date").min = DATA.days[0].date; $("date").max = DATA.days.at(-1).date;
 
 const W = DATA.weather, wIndex = Object.fromEntries(W.dates.map((d, i) => [d, i]));

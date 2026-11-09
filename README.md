@@ -4,7 +4,7 @@
 
 Every morning, the model gives each of the Var's 153 communes a chance that a fire of 0.1 ha or more starts there the next day. It combines a Fire Weather Index (FWI) computed for each commune from Météo-France stations with three things the FWI leaves out: each commune's usual fire rate, the burning calendar set by the prefecture, and one month of dryness (rain minus evaporation).
 
-**Live map, updated every morning:** https://guillaumegay13.github.io/firepredict/
+**Live map, updated every morning:** https://guillaumegay13.github.io/firepredict/ (Var and Bouches-du-Rhône, with a department picker)
 
 The frozen model and its model card are also on Hugging Face: [GuillaumeGay/firepredict](https://huggingface.co/GuillaumeGay/firepredict).
 
@@ -71,6 +71,23 @@ A logistic regression with five inputs:
 The forecast for day D+1 is issued on the morning of day D and uses data up to D-1 only. No input uses recent fire records: BDIFF publishes a year's fires months later, so a live forecast cannot know them. Automated tests check both rules.
 
 Larger models (CatBoost, the Timestral time-series model) were tested too. They do no better and are less consistent from year to year.
+
+### Version 3: one model for several departments
+
+`small_commune_v3` ([`models/small_commune_v3/`](models/small_commune_v3/), frozen on 9 November 2026) is a single logistic regression trained on the Var and the Bouches-du-Rhône together (2,140 positive commune-days). It adds two inputs to the five above:
+
+- **usual rate × June–September:** busy communes concentrate their fires in summer more than quiet ones. Without it, the model underestimated the Var's busiest communes in summer by half and overestimated Aix-en-Provence in winter.
+- **one level per department**, so the chances are calibrated in each department. Rankings transfer between departments; probabilities do not.
+
+Every-year test, each year hidden in both departments at once:
+
+| | Var (83) | Bouches-du-Rhône (13) |
+|---|---|---|
+| ROC AUC, v3 | 0.779 (v2: 0.782) | 0.864 (single-department model: 0.865) |
+| FWI × commune history | 0.757; v3 better in 17 / 19 years | 0.858; v3 better in 13 / 20 years |
+| 15 communes a day: positive commune-days caught | 219 (reference 220) | 630 (reference 605) |
+
+The map and the archive [`forecasts/v3/`](forecasts/v3/) use v3 for both departments. The v2 archive for the Var (`forecasts/*.csv`) keeps running unchanged, so the original live test continues. Version 3 has its own 2026 test (SHA-256 of `forecasts_2026.csv`: `783debd1cd6848fb0cd667ef2abc418a2221379c9698366e1e6ead8eae0a856c`).
 
 ## Run it
 

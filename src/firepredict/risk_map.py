@@ -28,7 +28,9 @@ import shapely
 from firepredict.communes import load_communes
 from firepredict.dataset import PROCESSED_DIR, RESULTS_DIR, ROOT, load_meteo
 from firepredict.compare_communes import leave_one_year_out, small
-from firepredict.freeze import VERSION, predict
+from firepredict import model_v3
+from firepredict.department import CODE, DEPARTMENTS
+from firepredict.freeze import FROZEN_DEPARTMENT, VERSION, predict
 from firepredict.model_communes import HORIZON, build_panel
 
 TEMPLATE = ROOT / "src" / "firepredict" / "risk_map_template.html"
@@ -37,6 +39,7 @@ SPLITS_SHOWN = ["test", "test_2025"]
 WIDTH = 1000  # SVG units
 SIMPLIFY_M = 120
 LOCAL_VARS = ["TX", "RR", "FFM", "UN"]  # weather shown in the pop-ups
+PAGES = ["83", "13"]  # departments published on the site, the first at its root
 
 
 def svg_shapes(communes) -> tuple[list[str], list[tuple[float, float]], float]:
@@ -82,12 +85,29 @@ def weather(dates: pd.DatetimeIndex, communes: pd.DataFrame) -> dict:
     }
 
 
+def model_for_map() -> str | None:
+    """The frozen model whose forecasts the map shows: v3 when frozen and it
+    covers the department, else v2 for the Var, else none (past years only)."""
+    if model_v3.MODEL_DIR.exists() and CODE in model_v3.DEPARTMENTS:
+        return model_v3.VERSION
+    return VERSION if CODE == FROZEN_DEPARTMENT else None
+
+
 def build() -> dict:
-    panel = build_panel(forecast=True)
+    model = model_for_map()
+    panel = build_panel(forecast=model is not None)
     labelled = panel[panel.target.notna()]
-    past = leave_one_year_out(labelled, {"small": small})["small"]
+    loyo = model_v3.OUT_DIR / f"{CODE}_loyo.parquet"
+    if model == model_v3.VERSION and loyo.exists():
+        past = pd.read_parquet(loyo).p  # v3 every-year test: each year hidden in every department
+    else:
+        past = leave_one_year_out(labelled, {"small": small})["small"]
     future = panel[panel.target.isna()]
-    panel = panel.assign(p=pd.concat([past, predict(future)]).reindex(panel.index))
+    if model == model_v3.VERSION:
+        parts = [past, model_v3.predict(future, CODE)]
+    else:
+        parts = [past, predict(future)] if model else [past]
+    panel = panel.assign(p=pd.concat(parts).reindex(panel.index))
     shown = panel[panel.split.isin(SPLITS_SHOWN) | panel.target.isna()]
 
     communes = load_communes()
@@ -118,7 +138,13 @@ def build() -> dict:
             for (_, row), d, (x, y) in zip(table.loc[communes.index].iterrows(), paths, points)
         ],  # fmt: skip
         "days": days,
-        "model": VERSION,
+        "model": model or "none (past years only)",
+        "department": CODE,
+        # Department picker: the first department's page is the site root,
+        # the others are in a sub-folder named after their code.
+        "departments": [{"code": c, "name": s.name,
+                         "href": (".." if CODE != PAGES[0] else ".") + ("" if c == PAGES[0] else f"/{c}") + "/"}
+                        for c, s in DEPARTMENTS.items() if c in PAGES],  # fmt: skip
         "weather": weather(pd.date_range(first, last, name="date"), table),
     }
 

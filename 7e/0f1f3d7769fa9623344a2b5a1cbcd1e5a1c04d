@@ -1,0 +1,27 @@
+models/small_commune_v3/usual_rates.csv
+  s_7d92950cd45a5d::t_8dc666645c8348 1-273
+models/small_commune_v3/metadata.json
+  s_7d92950cd45a5d::t_8dc666645c8348 1-94
+models/small_commune_v3/forecasts_2026.csv
+  s_7d92950cd45a5d::t_8dc666645c8348 1-85137
+forecasts/v3/13/2026-11-09.csv
+  s_7d92950cd45a5d::t_d7cfb9be452403 1-120
+forecasts/v3/83/2026-11-09.csv
+  s_7d92950cd45a5d::t_ce576351d9a1d3 1-154
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7e0f1f3d7769fa9623344a2b5a1cbcd1e5a1c04d",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

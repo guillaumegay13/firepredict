@@ -1,0 +1,14 @@
+src/firepredict/risk_map_template.html
+  h_4314c622e2d856 2,65,70-72,75,77,85,107-110,116-117,133,136-146,148-150,166,176
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1f3a8f0531d69d092a241e1b94f74e19b12a24f1",
+  "prompts": {},
+  "humans": {
+    "h_4314c622e2d856": {
+      "author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

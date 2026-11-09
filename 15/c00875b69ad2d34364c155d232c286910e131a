@@ -1,0 +1,36 @@
+src/firepredict/model_v4.py
+  s_7d92950cd45a5d::t_e4cb0ef8d2bb60 217,220-221,232,389-397
+  s_7d92950cd45a5d::t_94b9ad419873e7 398-399
+src/firepredict/risk_map.py
+  s_7d92950cd45a5d::t_e4cb0ef8d2bb60 31,89,91-92,103-105,110-112
+models/small_commune_v4/commune_history.csv
+  s_7d92950cd45a5d::t_239b26104e9094 1-273
+models/small_commune_v4/metadata.json
+  s_7d92950cd45a5d::t_239b26104e9094 1-63
+.github/workflows/daily.yml
+  s_7d92950cd45a5d::t_e4cb0ef8d2bb60 43-46
+forecasts/v4/83/2026-11-09.csv
+  s_7d92950cd45a5d::t_e4cb0ef8d2bb60 1-154
+models/small_commune_v4/forecasts_2026.csv
+  s_7d92950cd45a5d::t_239b26104e9094 1-85137
+forecasts/v4/13/2026-11-09.csv
+  s_7d92950cd45a5d::t_e4cb0ef8d2bb60 1-120
+README.md
+  s_7d92950cd45a5d::t_a8587bc30f95ba 75-90,105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "15c00875b69ad2d34364c155d232c286910e131a",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+static/README.md
+  s_7d92950cd45a5d::t_6fb234e1f918b4 1-7
+.github/workflows/daily.yml
+  s_7d92950cd45a5d::t_6fb234e1f918b4 1-52
+src/firepredict/download.py
+  s_7d92950cd45a5d::t_6fb234e1f918b4 183-184,191-199,253
+src/firepredict/risk_map_template.html
+  s_7d92950cd45a5d::t_6fb234e1f918b4 58,75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "919802cfc91c0dd55f388bba04d79e24efc7ddf8",
+  "prompts": {},
+  "sessions": {
+    "s_7d92950cd45a5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "027627e9-ffee-43c2-a749-03a397ae8adb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Guillaume Gay <guillaume.gay@protonmail.com>"
+    }
+  }
+}

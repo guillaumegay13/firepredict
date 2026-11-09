@@ -180,18 +180,22 @@ def download_school_holidays(force: bool) -> None:
     fetch(url, RAW_DIR / "calendar" / "vacances_scolaires.csv", force, note="Vacances scolaires par zones")
 
 
-def download_geography(force: bool) -> None:
-    """Commune boundaries + population, and Corine Land Cover 2018, for the Var.
-
-    Communes: geo.api.gouv.fr (IGN boundaries, INSEE population).
-    Corine: IGN Géoplateforme WFS, polygons in the Var bounding box (Lambert-93),
-    fetched in pages and saved as one GeoJSON.
-    """
+def download_communes(force: bool) -> None:
+    """Commune boundaries + population: geo.api.gouv.fr (IGN boundaries, INSEE population)."""
     url = (
         f"https://geo.api.gouv.fr/departements/{DEPARTMENT}/communes"
         "?fields=nom,code,population,surface&format=geojson&geometry=contour"
     )
     fetch(url, RAW_DIR / "geography" / f"communes_{DEPARTMENT}.geojson", force, note="geo.api.gouv.fr")
+
+
+def download_geography(force: bool) -> None:
+    """Commune boundaries, and Corine Land Cover 2018 for the Var.
+
+    Corine: IGN Géoplateforme WFS, polygons in the Var bounding box (Lambert-93),
+    fetched in pages and saved as one GeoJSON.
+    """
+    download_communes(force)
 
     dest = RAW_DIR / "geography" / f"corine_2018_{DEPARTMENT}.geojson"
     if dest.exists() and not force:
@@ -246,6 +250,7 @@ SOURCES = {
     "ddtm83": download_ddtm83_perimeters,
     "calendar": download_school_holidays,
     "geography": download_geography,
+    "communes": download_communes,
     "bdtopo": download_bdtopo,
 }
 

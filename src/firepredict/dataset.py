@@ -17,6 +17,10 @@ Weather rules:
 - Only "core" stations are used: stations with at least CORE_COVERAGE of days
   between 2006 and the last date. A fixed set avoids drift in the aggregates
   when stations open or close. Each day uses the core stations that reported.
+- Météo-France's daily files are published two days late (on day D they stop
+  at D-2), but its hourly file already holds D-1. Days missing from the daily
+  files are rebuilt from the hourly file with Météo-France's own daily windows
+  (see hourly_to_daily); official daily values replace them once published.
 
 Usage:
     uv run python -m firepredict.dataset
@@ -101,7 +105,66 @@ def daily_labels(fires: pd.DataFrame, dates: pd.DatetimeIndex) -> pd.DataFrame:
 
 
 def load_meteo() -> pd.DataFrame:
-    """Long table, one row per station-day, from 2006, doubtful values removed."""
+    """Long table, one row per station-day, from 2006, doubtful values removed.
+
+    Days after the last day of the daily files are added from the hourly file."""
+    daily = load_daily_files()
+    last = daily.loc[daily.TX.notna(), "date"].max()
+    recent = hourly_to_daily(daily, after=last)
+    if recent.empty:
+        return daily
+    return pd.concat([daily[daily.date <= last], recent], ignore_index=True)
+
+
+# Hourly variable -> (daily variable, aggregation, hours to shift so that a
+# window falls on one calendar day). Météo-France's daily windows, in UTC:
+# rain and max temperature from 06h on D to 06h on D+1; min temperature from
+# 18h on D-1 to 18h on D; wind, gusts and min humidity from 00h to 24h. An
+# hourly value stamped HH covers the hour ending at HH. Checked against the
+# official daily values for 2025-2026 in the Var: >= 99.9% of station-days
+# agree within 0.05 (mean wind: 98%).
+HOURLY_WINDOWS = {
+    "RR1": ("RR", "sum", 7),
+    "TX": ("TX", "max", 7),
+    "TN": ("TN", "min", -5),
+    "FF": ("FFM", "mean", 1),
+    "FXI": ("FXI", "max", 1),
+    "UN": ("UN", "min", 1),
+}
+MIN_HOURS = 20  # a day needs at least 20 of its 24 hourly values
+ETP_DAYS = 7  # potential evaporation is not hourly: use the station's mean of the last 7 days
+
+
+def hourly_to_daily(daily: pd.DataFrame, after: pd.Timestamp) -> pd.DataFrame:
+    """Station-days after `after`, rebuilt from the hourly "latest" file."""
+    paths = sorted((RAW_DIR / "meteofrance").glob(f"H_{CODE}_latest*.csv.gz"))
+    if not paths:
+        return daily.iloc[:0]
+    cols = [*HOURLY_WINDOWS, "DXI"]
+    h = pd.read_csv(paths[-1], sep=";", dtype={"NUM_POSTE": str},
+                    usecols=["NUM_POSTE", "NOM_USUEL", "AAAAMMJJHH", *cols, *("Q" + c for c in cols)])  # fmt: skip
+    for c in cols:
+        h.loc[h["Q" + c] == DOUBTFUL, c] = np.nan
+    h["time"] = pd.to_datetime(h.AAAAMMJJHH.astype(str), format="%Y%m%d%H")
+    columns = {}
+    for hourly, (name, how, shift) in HOURLY_WINDOWS.items():
+        day = (h.time - pd.Timedelta(hours=shift)).dt.normalize()
+        grouped = h.assign(date=day).groupby(["NUM_POSTE", "NOM_USUEL", "date"])[hourly]
+        columns[name] = grouped.agg(how).where(grouped.count() >= MIN_HOURS)
+    # Direction of the day's strongest gust.
+    gusts = h.assign(date=(h.time - pd.Timedelta(hours=1)).dt.normalize()).dropna(subset=["FXI"])
+    strongest = gusts.loc[gusts.groupby(["NUM_POSTE", "NOM_USUEL", "date"]).FXI.idxmax()]
+    columns["DXI"] = strongest.set_index(["NUM_POSTE", "NOM_USUEL", "date"]).DXI
+    out = pd.DataFrame(columns).reset_index()
+    names = [name for name, _, _ in HOURLY_WINDOWS.values()]
+    out = out[(out.date > after) & out[names].notna().any(axis=1)]
+    recent_etp = daily[daily.date > after - pd.Timedelta(days=ETP_DAYS)].groupby("NUM_POSTE").ETPGRILLE.mean()
+    out["ETPGRILLE"] = out.NUM_POSTE.map(recent_etp)
+    return out[daily.columns]
+
+
+def load_daily_files() -> pd.DataFrame:
+    """Long table from the daily files only."""
     frames = []
     for family in sorted(set(WEATHER_VARS.values())):
         cols = [v for v, f in WEATHER_VARS.items() if f == family]

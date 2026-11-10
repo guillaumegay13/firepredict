@@ -36,6 +36,7 @@ BDIFF_LAST_YEAR = 2025  # last complete year
 
 DATA_GOUV_API = "https://www.data.gouv.fr/api/1/datasets"
 METEO_DAILY_DATASET = "6569b51ae64326786e4e8e1a"  # Météo-France, données quotidiennes
+METEO_HOURLY_DATASET = "6569b4473bedf2e7abad3b72"  # Météo-France, données horaires
 
 
 # --- helpers -----------------------------------------------------------------
@@ -136,6 +137,17 @@ def download_meteo(force: bool) -> None:
             continue
         url = res["url"]
         fetch(url, RAW_DIR / "meteofrance" / url.rsplit("/", 1)[-1], force, note=title)
+    download_meteo_hourly(force)
+
+
+def download_meteo_hourly(force: bool) -> None:
+    """Météo-France hourly station data, current period only. The daily files
+    stop two days before today; the hourly file already holds yesterday, which
+    dataset.load_meteo turns into daily values."""
+    for res in data_gouv_resources(METEO_HOURLY_DATASET):
+        url = res["url"]
+        if f"H_{DEPARTMENT}_latest" in url:
+            fetch(url, RAW_DIR / "meteofrance" / url.rsplit("/", 1)[-1], force, note=res["title"])
 
 
 def download_meteo_latest(force: bool) -> None:
@@ -145,6 +157,7 @@ def download_meteo_latest(force: bool) -> None:
         url = res["url"]
         if f"Q_{DEPARTMENT}_latest" in url:
             fetch(url, RAW_DIR / "meteofrance" / url.rsplit("/", 1)[-1], True, note=res["title"])
+    download_meteo_hourly(True)
 
 
 def download_ddtm83_perimeters(force: bool) -> None:
@@ -301,6 +314,7 @@ SOURCES = {
     "bdiff": download_bdiff,
     "meteo": download_meteo,
     "meteo-latest": download_meteo_latest,
+    "meteo-hourly": download_meteo_hourly,
     "ddtm83": download_ddtm83_perimeters,
     "calendar": download_school_holidays,
     "geography": download_geography,

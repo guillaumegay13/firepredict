@@ -64,7 +64,7 @@ Three frozen versions, all logistic regressions; the map uses version 4, describ
 | February–March (brush burning allowed) | + | Var prefectoral orders on fire use |
 | June–September (burning banned) | − | Var prefectoral orders on fire use |
 
-The forecast for day D+1 is issued on the morning of day D and uses data up to D-1 only. No input uses recent fire records: BDIFF publishes a year's fires months later, so a live forecast cannot know them. Automated tests check both rules.
+The forecast for day D+1 is issued on the morning of day D and uses data up to D-1 only. Météo-France's daily files stop at D-2 on the morning of D, so day D-1 is rebuilt from its hourly file with the same daily windows (checked against the official daily values for 2025–2026: at least 98% of station-days agree within 0.05); the official values replace it the next day. No input uses recent fire records: BDIFF publishes a year's fires months later, so a live forecast cannot know them. Automated tests check both rules.
 
 Larger models (CatBoost, the Timestral time-series model) were tested too. They do no better and are less consistent from year to year.
 

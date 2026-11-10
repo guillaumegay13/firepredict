@@ -4,8 +4,12 @@ name: daily forecast
 # models' forecasts in forecasts/, rebuild the risk maps and publish them on
 # GitHub Pages (the Var at the site root, other departments in /<code>/).
 on:
+  # Météo-France publishes the previous day's data at about 07:00 UTC.
+  # GitHub often delays or skips runs at minute :00, so the times avoid it.
+  # The second run is a backup: it stops at once if the first one worked.
   schedule:
-    - cron: "0 9 * * *"  # 09:00 UTC, after Météo-France's morning update
+    - cron: "23 7 * * *"   # 07:23 UTC (08:23 Paris in winter, 09:23 in summer)
+    - cron: "41 9 * * *"   # backup
   workflow_dispatch:
 
 permissions:
@@ -18,7 +22,25 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      done: ${{ steps.check.outputs.done }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        name: Is tomorrow's forecast already archived?
+        run: |
+          tomorrow=$(date -u -d tomorrow +%Y-%m-%d)
+          if [ "${{ github.event_name }}" = "schedule" ] && [ -f "forecasts/v4/83/$tomorrow.csv" ] && [ -f "forecasts/v4/13/$tomorrow.csv" ]; then
+            echo "done=true" >> "$GITHUB_OUTPUT"; echo "Already done for $tomorrow: skipping."
+          else
+            echo "done=false" >> "$GITHUB_OUTPUT"
+          fi
+
   forecast:
+    needs: check
+    if: needs.check.outputs.done != 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

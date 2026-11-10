@@ -1,19 +1,78 @@
-# Wildfire risk in the Var (83): phase 1 results
+# Wildfire-start risk by commune, Var (83) and Bouches-du-Rhône (13): results
 
-*27 October 2026, updated 9 November 2026. Data: BDIFF fires 2006–2025, Météo-France daily stations, DDTM 83 perimeters, Corine Land Cover 2018, IGN BD TOPO (September 2026).*
+*27 October 2026, updated 10 November 2026. Data: BDIFF fires 2006–2025, Météo-France daily stations, DDTM 83 perimeters, Corine Land Cover 2018, IGN BD TOPO (September 2026), prefectoral orders on fire use (Var, Bouches-du-Rhône).*
+
+The work started with the Var alone (sections 1–8). The current model, version 4, covers the Var and the Bouches-du-Rhône and is described first. Older sections are kept as the record of how we got there; where their numbers are superseded, they say so.
 
 ## Summary
 
+- **Current model: version 4** (`models/small_commune_v4`, frozen 9 November 2026), one logistic regression for the Var and the Bouches-du-Rhône. Warning the 15 highest-risk communes each day, it catches **237 positive commune-days against 85 for the FWI alone in the Var, and 632 against 169 in the Bouches-du-Rhône** (every year hidden in turn). Against the FWI multiplied by each commune's fire history, the gain is modest: +7% and +5% at 15 communes a day. It is a research candidate: it did not meet the calibration rules written before the results, and the clean test is 2026. See "Current model" below.
 - **For "which days are dangerous", the official Fire Weather Index (FWI) is the best tool we found.** CatBoost and Mistral's Timestral do not beat it. For a yes/no "fire tomorrow?" forecast, a calendar rule ("warn every day from June to September") scores about as well as any of them.
 - **Weather predicts big fires much better than fire starts.** Most fires are started by people. The weather decides whether a fire can grow, so FWI ranks days with a fire of 100 ha or more almost perfectly (0.94), but days with any fire much less well (0.79).
 - **On dangerous days, more fires start; each fire is only a little more likely to grow.** Once a fire has started, the weather only weakly predicts whether it will grow (0.59–0.67). This is partly because firefighters attack fires early on dangerous days.
 - **Where fires start follows people, not forest.** Fires start where houses meet vegetation. A commune model puts 26–34% of fire starts into each day's top 15 communes (random: 10%), but simple rankings by size, history or vegetation near houses already get 20–33%.
 - **The fire records have two problems.** 2024 is almost empty for the Var, and in 2023 BDIFF started recording many more tiny fires. Both affect the benchmark's test year (2023).
 - **The FWI misses accidental and work fires outside summer, and the burning rules explain part of them.** In February–March, when owners may burn brush, these fires are 2.2 times what the FWI predicts. Arson, by contrast, matches the FWI exactly. A small model (FWI + burning period + 30-day rain minus evaporation) ranks fire days better than the FWI in 13 of 19 years (+0.015, p = 0.03). On the two test years it ties the FWI's F1 with half the warnings.
-- **At commune level, a small model (local FWI, commune fire history, burning calendar, 30-day dryness) is far better than the FWI alone**: warning the 15 highest-risk communes each day, it catches 213 positive commune-days against 85 (19 years, leave-one-year-out). Against the FWI multiplied by each commune's fire history, it ranks commune-days better (AUC 0.782 against 0.757, 16 of 19 years) but catches about as many at practical warning levels. See the update below: these are the corrected results.
+- **At commune level, a small model (local FWI, commune fire history, burning calendar, 30-day dryness) is far better than the FWI alone**: warning the 15 highest-risk communes each day, it catches 213 positive commune-days against 85 (19 years, leave-one-year-out). Against the FWI multiplied by each commune's fire history, it ranks commune-days better (AUC 0.782 against 0.757, 16 of 19 years) but catches about as many at practical warning levels. See the update below: these are the corrected results for version 2, now superseded by version 4.
 - **Location within a day is hard to improve.** None of the fixed rankings tested puts more than about 25% of fire starts in the day's top 15 communes; buildings and roads near vegetation (IGN BD TOPO) add nothing once fire history is known.
 
-## Update after an independent review (9 November 2026)
+## Current model: version 4 (9 November 2026)
+
+**What changed since version 2.** Version 2 was trained on the Var alone. Adding the Bouches-du-Rhône (1,238 positive commune-days over 2006–2025, 2024 usable there; see [`bouches_du_rhone_and_transfer.md`](bouches_du_rhone_and_transfer.md)) showed that the ranking transfers between departments but the probability levels do not. Version 3 (`small_commune_v3`) trained one model on both departments, with a department level and a "usual rate × June–September" term. It overestimated some communes badly: Draguignan in July 2026 at 1.52% a day, against a historical July rate of 0.85%. Version 4 replaces that term with inputs learned from the data rather than set by hand.
+
+**Inputs of version 4** (standardised weights):
+
+| Input | Weight | What it carries |
+|---|---|---|
+| Commune's usual rate, smoothed toward its department's rate (empirical Bayes, gamma–Poisson) | +0.86 | Where fires usually start; a commune with few fires is not judged on a handful of them |
+| Local FWI (nearest stations) | +0.65 | Today's fire weather |
+| Rain minus evaporation, last 30 days | −0.51 | Dryness |
+| Commune's share of fire days in June–September, smoothed toward its department's share (beta–binomial) | +0.25 | Each commune's own season: Aix-en-Provence peaks in summer, Draguignan is flatter |
+| Orange period (brush burning allowed with conditions) | +0.22 | Human ignitions outside summer |
+| Red period (burning banned) | −0.10 | |
+| Day of year (sine, cosine), and the same by department; department indicator | small | Seasonal curve, calibrated per department |
+
+Usual rates, summer shares and smoothing strengths are computed without the hidden year and without the row's own year. Draguignan in July 2026 is now 0.97%.
+
+**How it was chosen.** Nine variants (a ladder from version 2 pooled, through version 3, to version 4 and three extensions) were compared on the same folds, in two tests: every year hidden in turn (leave-one-year-out), and a forward test learning on earlier years only. Acceptance rules were written before the results:
+
+| Variant | Var: AUC / top 15 caught (every year) | Bouches-du-Rhône: AUC / top 15 caught | Lower log loss than v2 and v3, every test |
+|---|---|---|---|
+| v2 pooled | 0.776 / 219 | 0.866 / 633 | — |
+| v3 (rate × summer) | 0.779 / 219 | 0.864 / 630 | — |
+| **v4 (+ commune season)** | **0.784 / 237** | **0.869 / 631** | **yes** |
+| v4 + recency weights | 0.783 / 238 | 0.870 / 631 | yes |
+| v4 + second curve | 0.786 / 238 | 0.870 / 629 | yes |
+| v4 + season levels | 0.783 / 238 | 0.869 / 629 | yes |
+
+The three extensions were not reliably better than version 4 in paired bootstrap comparisons of log loss, so the simplest was kept.
+
+**Calibration** (expected ÷ observed fire days, 1 = right):
+
+| Group | v3 | v4 |
+|---|---|---|
+| Var, June–September, forward test | 1.63 | 1.37 |
+| Var, June–September, every year | 1.16 | 0.98 |
+| Bouches-du-Rhône, November–January, every year | 3.6 | 2.0 |
+| Bouches-du-Rhône, November–January, forward test | 3.1 | 1.9 |
+
+Version 4 removes version 3's clear failures but does not meet the original rule (0.8–1.25 in every season with 30 events or more): no variant did. Under an exploratory protocol defined after the results, with 95% ranges from resampling years, no group clearly fails for version 4; many are inconclusive, and Bouches-du-Rhône winters have too few fires to judge (22 over 20 years).
+
+**Against the FWI references** (every year hidden in turn; 95% ranges from resampling years):
+
+| Warning rule | Var: FWI alone → v4 | Var: history × FWI → v4 | Bouches-du-Rhône: FWI alone → v4 | Bouches-du-Rhône: history × FWI → v4 |
+|---|---|---|---|---|
+| 15 communes a day | 85 → 237, +179% | 222 → 237, +7% (−3% to +18%) | 169 → 632, +274% | 602 → 632, +5% (+2% to +9%) |
+| 30 communes a day | 190 → 377, +98% | 328 → 377, +15% (+6% to +25%) | 323 → 834, +158% | 818 → 834, +2% (−1% to +5%) |
+| 10% of commune-days | 230 → 355, +54% | 307 → 355, +16% (+3% to +30%) | 454 → 755, +66% | 737 → 755, +2% (−1% to +6%) |
+| 5 communes a day | 30 → 102 | 96 → 102, +6% (−5% to +26%) | 66 → 365 | 382 → 365, −4% (−9% to 0%) |
+| ROC AUC | 0.718 → 0.784, 19 / 19 years | 0.757 → 0.784, 16 / 19 | 0.781 → 0.869, 20 / 20 | 0.858 → 0.869, 15 / 20 |
+
+**What can be claimed.** Version 4 is far better than the FWI alone at choosing communes, in both departments and every year. Against the FWI combined with fire history, it ranks commune-days better in most years, with a modest gain at practical warning levels and none on the very top warnings. Its probabilities are closer to what happened than version 3's, but reliable calibration by season is not established.
+
+**Status and the 2026 test.** Frozen on 9 November 2026 as a research candidate. Its forecasts for 1 January – 9 November 2026 are saved in `models/small_commune_v4/forecasts_2026.csv` (85,136 rows, SHA-256 `1770b0b5…`), computed before any 2026 fire record was published. The scoring rule is written in its `metadata.json`. Versions 2 and 3 stay frozen, and the daily archives of all three keep running (`forecasts/`, `forecasts/v3/`, `forecasts/v4/`), so they can be compared on 2026. The map uses version 4.
+
+## Version 2: update after an independent review (9 November 2026)
 
 An independent review of the code and claims (OpenAI Codex, GPT-6.1, read-only) confirmed the arithmetic and the time alignment, and found one critical problem and several overstatements. Changes:
 
@@ -41,7 +100,7 @@ An independent review of the code and claims (OpenAI Codex, GPT-6.1, read-only) 
 - **Calibration** holds in the map's bands (0.1–0.3%: predicted 0.167%, observed 0.169%; 0.3–1%: 0.38% against 0.45%); above 1% there are only 17 commune-days.
 - **On its very top warnings the model does worse than FWI × history** (59 against 76 at the 1% most alarming commune-days), and its pooled PR AUC is lower (0.0030 against 0.0034). Recent-fire inputs were what sharpened the top of the old ranking.
 - **Department level** is unchanged for the small day model; CatBoost drops (within-year AUC 0.746) without the recent-fire inputs.
-- **Frozen model:** `models/small_commune_v2` (five inputs), frozen on 9 November 2026, with its 2026 forecasts (SHA-256 `2be6091a…`). Daily forecasts are archived in `forecasts/` from 9 November 2026.
+- **Frozen model:** `models/small_commune_v2` (five inputs, the Var only), frozen on 9 November 2026, with its 2026 forecasts (SHA-256 `2be6091a…`). Daily forecasts are archived in `forecasts/` from 9 November 2026. Superseded on the map by version 4 (above).
 
 Sections 7 and 8 below describe the first version; their commune numbers are superseded by this update.
 
@@ -225,21 +284,21 @@ Precision 0.34%, recall 39% (FWI alone: 0.22% and 26%). With fire starts on 0.08
 
 **Location within a day.** A hierarchical spatial Poisson model (BYM: landscape, neighbouring communes and own history, fitted with PyMC) gives smoothed rates that agree with raw history (correlation 0.96) and does not improve the daily ranking. Even with each commune's true rate, the 15 highest-rate communes would hold only 25% of fire starts: fires are spread over many communes with low individual risk. A fixed ranking cannot do better, and all models reach it. CatBoost goes about one point above it using information that changes daily (recent fires, local weather), short of significance (p = 0.06–0.16).
 
-**What can be claimed.** Across 19 years, the small model ranks commune-days better than the FWI combined with each commune's fire history (18/19 years, p < 0.001), and is right more often for the same number of warnings. It does not improve the daily choice of communes beyond their usual risk. The risk map (`results/risk_map.html`) uses this model.
+**What can be claimed.** Across 19 years, the small model ranks commune-days better than the FWI combined with each commune's fire history (18/19 years, p < 0.001), and is right more often for the same number of warnings. It does not improve the daily choice of communes beyond their usual risk. The risk map used this model until version 4.
 
 ## 8. Method and limits
 
 - **No peeking at the future.** Forecasts for day D+1 use data up to D-1. Automated tests check this at department level; at commune level, a commune's usual rate never includes the hidden year or the row's own year.
 - **Selection bias.** The burning period, the 30-day window and the small model's inputs were chosen after looking at results across all years. The every-year scores are therefore somewhat optimistic. The clean test is 2026 (below).
-- **Frozen model and retrospective 2026 test.** On 9 November 2026 the corrected model was frozen as `small_commune_v2` (trained on every labelled year) and its forecasts for 1 January – 9 November 2026 saved with a SHA-256 fingerprint. They were all computed on that day, so this is a retrospective test blind to the outcomes, not a live trial. Live forecasts are archived daily in `forecasts/`.
-- **Labels.** 2024 is excluded (almost empty for the Var). The 2023 form change is handled by counting fires ≥ 0.1 ha only. BDIFF gives the commune of each fire, not its position.
+- **Frozen models and retrospective 2026 test.** On 9 November 2026 versions 2, 3 and 4 were frozen (trained on every labelled year) and their forecasts for 1 January – 9 November 2026 saved with SHA-256 fingerprints. They were all computed on that day, so this is a retrospective test blind to the outcomes, not a live trial. Live forecasts are archived daily in `forecasts/` (v2), `forecasts/v3/` and `forecasts/v4/`.
+- **Labels.** The Var's 2024 is excluded (almost empty); the Bouches-du-Rhône's 2024 is usable. The Var recorded fewer fires in 2013–2022 than the model expects, probably a change in recording (not proven). The 2023 form change is handled by counting fires ≥ 0.1 ha only. BDIFF gives the commune of each fire, not its position.
 - **Landscape.** One BD TOPO edition (September 2026) is used for every year, so buildings built later are counted for earlier years.
-- **Burning calendar.** The rules of the 2013 and 2025 orders are applied to all years; the 2006–2012 rules and the prefect's extra red days are not included.
-- **Sample size.** 902 fire starts over 19 years, 11 to 124 per year. Gains are reported with 95% ranges from resampling years.
+- **Burning calendar.** Var: the rules of the 2013 and 2025 orders are applied to all years; the 2006–2012 rules and the prefect's extra red days are not included. Bouches-du-Rhône: restricted periods February–March and June–September until 19 December 2013, then June–September only.
+- **Sample size.** Var: 902 positive commune-days over 19 years, 11 to 124 per year. Bouches-du-Rhône: 1,238 over 20 years. Gains are reported with 95% ranges from resampling years.
 
 ## 9. What this means
 
-1. **For each commune, the small model is better than the FWI.** It ranks commune-days better in 18 of 19 years and gives more right warnings for the same alert budget. At department level, the gain is smaller (13 of 19 years) and does not show on the two test years alone.
+1. **For each commune, the small model is better than the FWI.** Version 4 ranks commune-days better than the FWI alone in every year of both departments, and catches about three times more fire starts in the day's top 15 communes. At department level, the gain is smaller (13 of 19 years) and does not show on the two test years alone.
 2. **The missing information is human ignition**: who starts fires, when and where. It is not missing weather. The burning calendar is the first human signal we found that the FWI misses.
 3. **Fire services need two numbers:** the chance of a fire starting, and how bad a fire would get. FWI answers the second only.
 4. **Judge any model against naive references** (calendar, commune size or history). Without them, our results would look much better than they are.
@@ -247,13 +306,14 @@ Precision 0.34%, recall 39% (FWI alone: 0.22% and 26%). With fire starts on 0.08
 ## 10. Not done yet
 
 - Timestral-209M (about an hour of CPU; not expected to change the conclusion), the J0 and J+7 horizons, burned area as the target, and SHAP explanations.
-- A single command to run the whole pipeline end to end, and the README.
+- Score the 2026 forecasts of versions 2, 3 and 4 when BDIFF publishes 2026.
+- Forecasts further ahead than tomorrow (D+2 to D+90).
 - One BD TOPO edition (2026) is used for all years, so buildings built after a given year are counted for it.
 
 ## 11. Recommendations for phase 2
 
 1. **Predict unusual local risk**, not raw risk: "commune X is 4 times above its normal today". This is what fire services can act on, and it is a fairer test than ranking big communes first. Use the same ideas at commune level: few inputs, the burning period, and each commune's local 30-day dryness.
-2. **More fires to learn from:** run the same pipeline on the other Mediterranean departments in BDIFF (Bouches-du-Rhône, Alpes-Maritimes, Vaucluse, Corsica…), with the Var kept as the test area.
+2. **More fires to learn from:** done for the Bouches-du-Rhône (version 4). Next: Alpes-Maritimes, Vaucluse, Corsica and the other Mediterranean departments in BDIFF.
 3. **Information that changes daily and points to a commune**, the most likely way to improve on the ~25% reached by fixed rankings: burning declarations, works, fire series, finer local weather (ERA5-Land or AROME, free accounts).
 4. **Fix the labels at the source:** ask BDIFF / DDTM 83 about the Var's 2024 records.
 5. **Keep evaluating on every year (leave-one-year-out)**, not one test year. Single years hold only 20–60 fire days.
@@ -284,7 +344,11 @@ uv run python -m firepredict.download meteo-latest # refresh this year's weather
 uv run python -m firepredict.value_check           # fires caught vs FWI references, 95% ranges
 uv run python -m firepredict.calibration           # probabilities, PR AUC, confusion table
 uv run python -m firepredict.freeze                # freeze the model, save 2026 forecasts
-uv run python -m firepredict.risk_map              # commune map → results/risk_map.html
+uv run python -m firepredict.risk_map              # commune map → results/<department>/risk_map.html
+uv run python -m firepredict.pipeline --department 13 data   # Bouches-du-Rhône tables
+uv run python -m firepredict.model_v4 evaluate     # version 4 ladder, both departments → results/v4/
+uv run python -m firepredict.model_v4 value        # version 4 against the FWI references
+uv run python -m firepredict.model_v4 forecast     # today's forecast, both departments → forecasts/v4/
 ```
 
 The benchmark repository has no licence. Its scoring and class methods were reimplemented from their description, not copied.

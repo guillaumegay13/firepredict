@@ -49,8 +49,8 @@ The full analysis, with every table, is in [`reports/phase1_results.md`](reports
 
 The inputs were chosen after looking at results across all years, so the scores above are somewhat optimistic. Two cleaner tests are running:
 
-- **Retrospective 2026 test, blind to the outcomes.** On 9 November 2026, before any 2026 fire record was published, the model was frozen ([`models/small_commune_v2/`](models/small_commune_v2/)) and its forecasts for 1 January – 9 November 2026 saved (`forecasts_2026.csv`, SHA-256 `2be6091ab25539dc47bb751822d2a9b2b48f21218f8238bf0be1e1653dc8c6d6`). They were all computed on that day, from the weather available then. When BDIFF publishes the 2026 fires, they will be scored as they are.
-- **Live archive.** From 9 November 2026, each day's forecast from the frozen model is saved in [`forecasts/`](forecasts/) and committed the same day, so the git history dates it.
+- **Retrospective 2026 test, blind to the outcomes.** On 9 November 2026, before any 2026 fire record was published, versions 2, 3 and 4 were frozen and their forecasts for 1 January – 9 November 2026 saved, each with a SHA-256 fingerprint (version 4: [`models/small_commune_v4/forecasts_2026.csv`](models/small_commune_v4/), `1770b0b5e51aea65d39383043e3a7480d063574a1160d3eb52bfae00237b959e`; version 2, the Var only: `2be6091ab25539dc47bb751822d2a9b2b48f21218f8238bf0be1e1653dc8c6d6`). They were all computed on that day, from the weather available then. When BDIFF publishes the 2026 fires, they will be scored as they are.
+- **Live archive.** From 9 November 2026, each day's forecast from each frozen version is saved ([`forecasts/v4/`](forecasts/v4/) for the current model; `forecasts/v3/`; `forecasts/` for version 2) and committed the same day, so the git history dates it.
 
 ## The model
 
